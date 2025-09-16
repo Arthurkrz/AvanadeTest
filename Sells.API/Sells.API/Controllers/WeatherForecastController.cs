@@ -1,19 +1,19 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace StockAPI.Controllers;
+namespace Sells.API.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ProductController : ControllerBase
+public class WeatherForecastController : ControllerBase
 {
     private static readonly string[] Summaries = new[]
     {
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
     };
 
-    private readonly ILogger<ProductController> _logger;
+    private readonly ILogger<WeatherForecastController> _logger;
 
-    public ProductController(ILogger<ProductController> logger)
+    public WeatherForecastController(ILogger<WeatherForecastController> logger)
     {
         _logger = logger;
     }

@@ -31,7 +31,7 @@ namespace Stock.API.Service
         {
             var response = _productRepository.GetById(productId);
 
-            if (!response.Success) return response;
+            if (!response.Success) return response!;
 
             if (response.Value!.AmountInStock < sellAmount)
                 return Response<Product>.Ko(0, new List<string> { "Not enough items in stock." });
@@ -43,8 +43,5 @@ namespace Stock.API.Service
 
         public IEnumerable<Product> GetAll() => 
             _productRepository.GetAll();
-
-        public Response<Product> GetById(Guid productId) => 
-            _productRepository.GetById(productId);
     }
 }

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.13.35828.75
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockAPI", "StockAPI\StockAPI.csproj", "{BC27313D-DFD3-4E2F-8CAD-2F0F6A2C4288}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stock.API.Web", "Stock.API.Web\Stock.API.Web.csproj", "{BC27313D-DFD3-4E2F-8CAD-2F0F6A2C4288}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stock.API.Architecture", "Stock.API.Architecture\Stock.API.Architecture.csproj", "{B81958B6-D14D-418A-AD03-9256910123A6}"
 EndProject

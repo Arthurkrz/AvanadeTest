@@ -5,6 +5,14 @@ namespace Stock.API.Core.Common
 {
     public class Response<T> where T : Entity
     {
+        private Response(T? value, ErrorType? errorType, IList<string>? errors, bool success)
+        {
+            _value = value;
+            ErrorType = errorType;
+            Errors = errors ?? new List<string>();
+            Success = success;
+        }
+
         private readonly T? _value;
 
         public T? Value
@@ -22,14 +30,6 @@ namespace Stock.API.Core.Common
         public IList<string> Errors { get; }
 
         public bool Success { get; }
-
-        private Response(T? value, ErrorType? errorType, IList<string>? errors, bool success)
-        {
-            _value = value;
-            ErrorType = errorType;
-            Errors = errors ?? new List<string>();
-            Success = success;
-        }
 
         public static Response<T> Ok(T value) =>
             new Response<T>(value, null, null, true);

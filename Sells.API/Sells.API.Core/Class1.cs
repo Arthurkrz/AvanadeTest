@@ -1,4 +1,4 @@
-﻿namespace Stock.API.Architecture
+﻿namespace Sells.API.Core
 {
     public class Class1
     {
