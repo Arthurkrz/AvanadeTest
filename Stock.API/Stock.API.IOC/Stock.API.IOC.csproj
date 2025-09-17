@@ -7,7 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
+    <ProjectReference Include="..\Stock.API.Architecture\Stock.API.Architecture.csproj" />
+    <ProjectReference Include="..\Stock.API.Core\Stock.API.Core.csproj" />
+    <ProjectReference Include="..\Stock.API.Service\Stock.API.Service.csproj" />
   </ItemGroup>
 
 </Project>
