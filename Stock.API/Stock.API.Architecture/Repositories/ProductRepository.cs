@@ -47,8 +47,8 @@ namespace Stock.API.Architecture.Repositories
             try
             {
                 existingEntity = _context.Products.Find(productId);
-                if (existingEntity == null)
-                    return Response<Product>.Ko(0, new List<string> { "Product not found." });
+            if (existingEntity == null)
+                return Response<Product>.Ko(0, new List<string> { "Product not found." });
 
                 _context.Entry(existingEntity).CurrentValues
                               .SetValues(new { AmountInStock = newAmountInStock });
