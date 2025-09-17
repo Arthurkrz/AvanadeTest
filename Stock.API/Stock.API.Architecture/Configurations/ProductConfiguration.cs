@@ -19,7 +19,7 @@ namespace Stock.API.Architecture.Configurations
                    .IsRequired();
 
             builder.Property(x => x.Description)
-                .HasMaxLength(1000);
+                    .HasMaxLength(1000);
 
             builder.Property(x => x.Price)
                    .HasColumnType("decimal(18,2)")

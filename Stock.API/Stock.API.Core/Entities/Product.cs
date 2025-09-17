@@ -6,7 +6,7 @@
 
         public string Description { get; set; } = default!;
         
-        public double Price { get; set; }
+        public decimal Price { get; set; }
         
         public int AmountInStock { get; set; }
     }
