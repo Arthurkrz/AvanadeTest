@@ -42,12 +42,13 @@ namespace Stock.API.Architecture.Repositories
 
         public Response<Product> UpdateStock(Guid productId, int newAmountInStock)
         {
-            Product? existingEntity = new();
+            Product? existingEntity = new("Placeholder", "Placeholder", 1, 1);
 
             try
             {
                 existingEntity = _context.Products.Find(productId);
-            if (existingEntity == null)
+
+                if (existingEntity == null)
                 return Response<Product>.Ko(0, new List<string> { "Product not found." });
 
                 _context.Entry(existingEntity).CurrentValues
