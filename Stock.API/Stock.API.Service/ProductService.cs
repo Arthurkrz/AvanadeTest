@@ -3,6 +3,7 @@ using Stock.API.Core.Common;
 using Stock.API.Core.Contracts.Repository;
 using Stock.API.Core.Contracts.Service;
 using Stock.API.Core.Entities;
+using Stock.API.Core.Enum;
 
 namespace Stock.API.Service
 {
@@ -22,7 +23,7 @@ namespace Stock.API.Service
             var validationResult = _productValidator.Validate(product);
 
             if (!validationResult.IsValid) 
-                return Response<Product>.Ko(0, validationResult.Errors.Select(e => e.ErrorMessage).ToList());
+                return Response<Product>.Ko((ErrorType)6, validationResult.Errors.Select(e => e.ErrorMessage).ToList());
 
             return _productRepository.Create(product);
         }
@@ -31,14 +32,32 @@ namespace Stock.API.Service
         {
             var response = _productRepository.GetById(productId);
 
-            if (!response.Success) return response!;
+            if (!response.Success) return response;
 
             if (response.Value!.AmountInStock < sellAmount)
-                return Response<Product>.Ko(0, new List<string> { "Not enough items in stock." });
+                return Response<Product>.Ko((ErrorType)6, new List<string> { "Not enough items in stock." });
 
             int newAmountInStock = response.Value!.AmountInStock - sellAmount;
 
             return _productRepository.UpdateStock(productId, newAmountInStock);
+        }
+
+        public Response<Product> UpdateProduct(Guid productId, Product product)
+        {
+            var validationResult = _productValidator.Validate(product);
+
+            if (!validationResult.IsValid)
+                return Response<Product>.Ko((ErrorType)6, validationResult.Errors.Select(e => e.ErrorMessage).ToList());
+
+            return _productRepository.UpdateProduct(productId, product);
+        }
+
+        public Response<Product> DeleteProduct(Guid productId)
+        {
+            var response = _productRepository.Delete(productId);
+            if (!response.Success) return response;
+
+            return Response<Product>.Ok(response.Value!);
         }
 
         public IEnumerable<Product> GetAll() => 

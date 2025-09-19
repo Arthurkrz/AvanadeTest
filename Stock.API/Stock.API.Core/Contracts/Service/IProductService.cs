@@ -9,6 +9,10 @@ namespace Stock.API.Core.Contracts.Service
 
         Response<Product> UpdateStock(Guid productId, int newAmountInStock);
 
+        Response<Product> UpdateProduct(Guid productId, Product product);
+
+        Response<Product> DeleteProduct(Guid id);
+
         IEnumerable<Product> GetAll();
     }
 }

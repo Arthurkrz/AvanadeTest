@@ -36,7 +36,7 @@ namespace Stock.API.Core.Common
 
         public static Response<T> Ko(ErrorType errorType, IList<string> errors)
         {
-            if (errorType == 0) 
+            if (errorType == 0 || errorType == Enum.ErrorType.Undefined) 
                 throw new ArgumentException("ErrorType cannot be undefined.", nameof(errorType));
 
             if (errors == null || errors.Count == 0)

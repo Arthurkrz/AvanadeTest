@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Stock.API.Core.Enum;
 
-namespace Stock.API.Web
+namespace Stock.API.Web.Utilities
 {
     public static class HTTPErrorMapper
     {

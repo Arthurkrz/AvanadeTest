@@ -1,6 +1,7 @@
 ﻿using Stock.API.Core.Common;
 using Stock.API.Core.Contracts.Repository;
 using Stock.API.Core.Entities;
+using Stock.API.Core.Enum;
 
 namespace Stock.API.Architecture.Repositories
 {
@@ -16,10 +17,21 @@ namespace Stock.API.Architecture.Repositories
         public Response<Product> Create(Product product)
         {
             try { _context.Products.Add(product); }
-            catch (Exception ex) { return Response<Product>.Ko(0, new List<string> { ex.Message }); }
+            catch (Exception ex) { return Response<Product>.Ko((ErrorType)4, new List<string> { ex.Message }); }
 
             _context.SaveChanges();
             return Response<Product>.Ok(product);
+        }
+
+        public Response<Product> Delete(Guid id)
+        {
+            var product = GetById(id);
+            if (product is null) return Response<Product>.Ko((ErrorType)2, new List<string> { "Product not found." });
+
+            try { _context.Remove(product); }
+            catch (Exception ex) { return Response<Product>.Ko((ErrorType)4, new List<string> { ex.Message }); }
+
+            return Response<Product>.Ok(product.Value!);
         }
 
         public IEnumerable<Product> GetAll() =>
@@ -32,12 +44,25 @@ namespace Stock.API.Architecture.Repositories
                 var entity = _context.Products.Find(productId); 
 
                 if (entity == null)
-                    return Response<Product>.Ko(0, new List<string> { "Product not found." });
+                    return Response<Product>.Ko((ErrorType)2, new List<string> { "Product not found." });
 
                 return Response<Product>.Ok(entity);
             }
 
-            catch (Exception ex) { return Response<Product>.Ko(0, new List<string> { ex.Message }); }
+            catch (Exception ex) { return Response<Product>.Ko((ErrorType)4, new List<string> { ex.Message }); }
+        }
+
+        public Response<Product> UpdateProduct(Guid productId, Product product)
+        {
+            var existingEntity = _context.Set<Product>().Find(productId);
+
+            if (existingEntity is null)
+                return Response<Product>.Ko((ErrorType)2, new List<string> { "Product not found." });
+
+            try { _context.Entry(existingEntity).CurrentValues.SetValues(product); }
+            catch (Exception ex) { return Response<Product>.Ko((ErrorType)4, new List<string> { ex.Message }); }
+
+            return Response<Product>.Ok(product);
         }
 
         public Response<Product> UpdateStock(Guid productId, int newAmountInStock)
@@ -49,13 +74,13 @@ namespace Stock.API.Architecture.Repositories
                 existingEntity = _context.Products.Find(productId);
 
                 if (existingEntity == null)
-                return Response<Product>.Ko(0, new List<string> { "Product not found." });
+                return Response<Product>.Ko((ErrorType)2, new List<string> { "Product not found." });
 
                 _context.Entry(existingEntity).CurrentValues
                               .SetValues(new { AmountInStock = newAmountInStock });
             }
 
-            catch (Exception ex) { return Response<Product>.Ko(0, new List<string> { ex.Message }); }
+            catch (Exception ex) { return Response<Product>.Ko((ErrorType)4, new List<string> { ex.Message }); }
 
             _context.SaveChanges();
             return Response<Product>.Ok(existingEntity);
