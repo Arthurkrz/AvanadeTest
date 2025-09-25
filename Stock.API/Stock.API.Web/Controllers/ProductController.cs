@@ -3,9 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Stock.API.Core.Contracts.Service;
 using Stock.API.Core.Entities;
-using Stock.API.Core.Enum;
 using Stock.API.Web.DTOs;
-using Stock.API.Web.Utilities;
 
 namespace StockAPI.Controllers;
 
@@ -35,13 +33,9 @@ public class ProductController : ControllerBase
                                  (decimal)productDTO.Price!, 
                                  (int)productDTO.AmountInStock!);
 
-        var creationResult = _productService.Create(product);
-
-        if (!creationResult.Success) 
-            return HTTPErrorMapper.Map(creationResult.ErrorType ?? ErrorType.Undefined, 
-                                       creationResult.Errors ?? new List<string>());
+        var createdProduct = _productService.Create(product);
         
-        return Ok(creationResult.Value);
+        return Ok(new { createdProduct.ID, createdProduct.Name, createdProduct.Price, createdProduct.AmountInStock });
     }
 
     [Authorize(Roles = "Admin,SellsAPI")]
@@ -51,13 +45,9 @@ public class ProductController : ControllerBase
         if (id == Guid.Empty || sellAmount == 0 || sellAmount < 0)
             return BadRequest("Incorrect format.");
 
-        var updateResult = _productService.UpdateStock(id, sellAmount);
+        var soldProduct = _productService.UpdateStock(id, sellAmount);
 
-        if (!updateResult.Success) return
-                HTTPErrorMapper.Map(updateResult.ErrorType ?? ErrorType.Undefined, 
-                                    updateResult.Errors ?? new List<string>());
-
-        return Ok(updateResult.Value);
+        return Ok(new { soldProduct.ID, soldProduct.Name, soldProduct.Price, soldProduct.AmountInStock });
     }
 
     [Authorize(Roles = "Admin")]
@@ -77,13 +67,9 @@ public class ProductController : ControllerBase
             (int)productDTO.AmountInStock!
         );
 
-        var updateResult = _productService.UpdateProduct(id, product);
+        var updatedProduct = _productService.UpdateProduct(id, product);
 
-        if (!updateResult.Success) return
-                HTTPErrorMapper.Map(updateResult.ErrorType ?? ErrorType.Undefined,
-                                    updateResult.Errors ?? new List<string>());
-
-        return Ok(updateResult.Value);
+        return Ok(updatedProduct);
     }
 
     [Authorize(Roles = "Admin")]
@@ -92,13 +78,9 @@ public class ProductController : ControllerBase
     {
         if (id == Guid.Empty) return BadRequest("Incorrect format.");
 
-        var deleteResult = _productService.DeleteProduct(id);
+        var deletedProduct = _productService.DeleteProduct(id);
 
-        if (!deleteResult.Success) return 
-                HTTPErrorMapper.Map(deleteResult.ErrorType ?? ErrorType.Undefined,
-                                    deleteResult.Errors ?? new List<string>());
-
-        return Ok(deleteResult.Value);
+        return Ok(new { deletedProduct.ID, deletedProduct.Name });
     }
 
     [Authorize(Roles = "Admin,SellsAPI")]

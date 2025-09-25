@@ -5,13 +5,13 @@ namespace Stock.API.Core.Contracts.Service
 {
     public interface IProductService
     {
-        Response<Product> Create(Product product);
+        Product Create(Product product);
 
-        Response<Product> UpdateStock(Guid productId, int newAmountInStock);
+        Product UpdateStock(Guid productId, int newAmountInStock);
 
-        Response<Product> UpdateProduct(Guid productId, Product product);
+        Product UpdateProduct(Guid productId, Product product);
 
-        Response<Product> DeleteProduct(Guid id);
+        Product DeleteProduct(Guid id);
 
         IEnumerable<Product> GetAll();
     }

@@ -18,46 +18,46 @@ namespace Stock.API.Service
             _productValidator = productValidator ?? throw new ArgumentNullException(nameof(productValidator));
         }
 
-        public Response<Product> Create(Product product)
-        {
-            var validationResult = _productValidator.Validate(product);
-
-            if (!validationResult.IsValid) 
-                return Response<Product>.Ko((ErrorType)6, validationResult.Errors.Select(e => e.ErrorMessage).ToList());
-
-            return _productRepository.Create(product);
-        }
-
-        public Response<Product> UpdateStock(Guid productId, int sellAmount)
-        {
-            var response = _productRepository.GetById(productId);
-
-            if (!response.Success) return response;
-
-            if (response.Value!.AmountInStock < sellAmount)
-                return Response<Product>.Ko((ErrorType)6, new List<string> { "Not enough items in stock." });
-
-            int newAmountInStock = response.Value!.AmountInStock - sellAmount;
-
-            return _productRepository.UpdateStock(productId, newAmountInStock);
-        }
-
-        public Response<Product> UpdateProduct(Guid productId, Product product)
+        public Product Create(Product product)
         {
             var validationResult = _productValidator.Validate(product);
 
             if (!validationResult.IsValid)
-                return Response<Product>.Ko((ErrorType)6, validationResult.Errors.Select(e => e.ErrorMessage).ToList());
+            {
+                var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+                throw new StockApiException(errors, (ErrorType)6);
+            }
+
+            return _productRepository.Create(product);
+        }
+
+        public Product UpdateStock(Guid productId, int sellAmount)
+        {
+            var product = _productRepository.GetById(productId);
+
+            int newAmountInStock = product.AmountInStock - sellAmount;
+
+            return _productRepository.UpdateStock(productId, newAmountInStock);
+        }
+
+        public Product UpdateProduct(Guid productId, Product product)
+        {
+            var validationResult = _productValidator.Validate(product);
+
+            if (!validationResult.IsValid)
+            {
+                var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+                throw new StockApiException(errors, (ErrorType)6);
+            }
 
             return _productRepository.UpdateProduct(productId, product);
         }
 
-        public Response<Product> DeleteProduct(Guid productId)
+        public Product DeleteProduct(Guid productId)
         {
-            var response = _productRepository.Delete(productId);
-            if (!response.Success) return response;
+            var deletedProduct = _productRepository.Delete(productId);
 
-            return Response<Product>.Ok(response.Value!);
+            return deletedProduct;
         }
 
         public IEnumerable<Product> GetAll() => 

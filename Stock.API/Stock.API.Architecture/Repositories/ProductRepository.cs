@@ -14,58 +14,58 @@ namespace Stock.API.Architecture.Repositories
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public Response<Product> Create(Product product)
+        public Product Create(Product product)
         {
             try { _context.Products.Add(product); }
-            catch (Exception ex) { return Response<Product>.Ko((ErrorType)4, new List<string> { ex.Message }); }
+            catch (Exception ex) { throw new StockApiException(new List<string> { ex.Message }, (ErrorType)4); }
 
             _context.SaveChanges();
-            return Response<Product>.Ok(product);
+            return product;
         }
 
-        public Response<Product> Delete(Guid id)
+        public Product Delete(Guid id)
         {
             var product = GetById(id);
-            if (product is null) return Response<Product>.Ko((ErrorType)2, new List<string> { "Product not found." });
+            if (product is null) throw new StockApiException(new List<string> { "Product not found." }, (ErrorType)2);
 
             try { _context.Remove(product); }
-            catch (Exception ex) { return Response<Product>.Ko((ErrorType)4, new List<string> { ex.Message }); }
+            catch (Exception ex) { throw new StockApiException(new List<string> { ex.Message }, (ErrorType)4); }
 
-            return Response<Product>.Ok(product.Value!);
+            return product;
         }
 
         public IEnumerable<Product> GetAll() =>
             _context.Set<Product>().AsQueryable();
 
-        public Response<Product> GetById(Guid productId)
+        public Product GetById(Guid productId)
         {
             try 
             { 
-                var entity = _context.Products.Find(productId); 
+                var entity = _context.Products.Find(productId);
 
-                if (entity == null)
-                    return Response<Product>.Ko((ErrorType)2, new List<string> { "Product not found." });
+                if (entity is null)
+                    throw new StockApiException(new List<string> { "Product not found" }, (ErrorType)2);
 
-                return Response<Product>.Ok(entity);
+                return entity;
             }
 
-            catch (Exception ex) { return Response<Product>.Ko((ErrorType)4, new List<string> { ex.Message }); }
+            catch (Exception ex) { throw new StockApiException(new List<string> { ex.Message }, (ErrorType)4); }
         }
 
-        public Response<Product> UpdateProduct(Guid productId, Product product)
+        public Product UpdateProduct(Guid productId, Product product)
         {
             var existingEntity = _context.Set<Product>().Find(productId);
 
             if (existingEntity is null)
-                return Response<Product>.Ko((ErrorType)2, new List<string> { "Product not found." });
+                throw new StockApiException(new List<string> { "Product not found." }, (ErrorType)2);
 
             try { _context.Entry(existingEntity).CurrentValues.SetValues(product); }
-            catch (Exception ex) { return Response<Product>.Ko((ErrorType)4, new List<string> { ex.Message }); }
+            catch (Exception ex) { throw new StockApiException(new List<string> { ex.Message }, (ErrorType)4); }
 
-            return Response<Product>.Ok(product);
+            return product;
         }
 
-        public Response<Product> UpdateStock(Guid productId, int newAmountInStock)
+        public Product UpdateStock(Guid productId, int newAmountInStock)
         {
             Product? existingEntity = new("Placeholder", "Placeholder", 1, 1);
 
@@ -74,16 +74,18 @@ namespace Stock.API.Architecture.Repositories
                 existingEntity = _context.Products.Find(productId);
 
                 if (existingEntity == null)
-                return Response<Product>.Ko((ErrorType)2, new List<string> { "Product not found." });
+                throw new StockApiException(new List<string> { "Product not found." }, (ErrorType)2);
 
                 _context.Entry(existingEntity).CurrentValues
                               .SetValues(new { AmountInStock = newAmountInStock });
             }
 
-            catch (Exception ex) { return Response<Product>.Ko((ErrorType)4, new List<string> { ex.Message }); }
+            catch (Exception ex) { throw new StockApiException(new List<string> { ex.Message }, (ErrorType)4); }
 
             _context.SaveChanges();
-            return Response<Product>.Ok(existingEntity);
+
+            existingEntity.AmountInStock = newAmountInStock;
+            return existingEntity;
         }
     }
 }
