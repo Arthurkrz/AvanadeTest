@@ -1,32 +1,89 @@
+using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Stock.API.Core.Contracts.Service;
+using Stock.API.Core.Entities;
+using Stock.API.Web.DTOs;
 
 namespace StockAPI.Controllers;
 
+[Authorize]
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class ProductController : ControllerBase
 {
-    //private static readonly string[] Summaries = new[]
-    //{
-    //    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    //};
+    private readonly IProductService _productService;
+    private readonly IValidator<ProductDTO> _productDTOValidator;
 
-    private readonly ILogger<ProductController> _logger;
-
-    public ProductController(ILogger<ProductController> logger)
+    public ProductController(IProductService productService, IValidator<ProductDTO> productDTOValidator)
     {
-        _logger = logger;
+        _productService = productService;
+        _productDTOValidator = productDTOValidator;
     }
 
-    //[HttpGet]
-    //public IEnumerable<WeatherForecast> Get()
-    //{
-    //    return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-    //    {
-    //        Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-    //        TemperatureC = Random.Shared.Next(-20, 55),
-    //        Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-    //    })
-    //    .ToArray();
-    //}
+    [Authorize(Roles = "Admin")]
+    [HttpPost]
+    public IActionResult Create([FromBody] ProductDTO productDTO)
+    {
+        var validationResult = _productDTOValidator.Validate(productDTO);
+
+        if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
+
+        var product = new Product(productDTO.Name!, productDTO.Description!, 
+                                 (decimal)productDTO.Price!, 
+                                 (int)productDTO.AmountInStock!);
+
+        var createdProduct = _productService.Create(product);
+        
+        return Ok(new { createdProduct.ID, createdProduct.Name, createdProduct.Price, createdProduct.AmountInStock });
+    }
+
+    [Authorize(Roles = "Admin,SellsAPI")]
+    [HttpPut("{id:guid}")]
+    public IActionResult Sell(Guid id, [FromBody] int sellAmount)
+    {
+        if (id == Guid.Empty || sellAmount == 0 || sellAmount < 0)
+            return BadRequest("Incorrect format.");
+
+        var soldProduct = _productService.UpdateStock(id, sellAmount);
+
+        return Ok(new { soldProduct.ID, soldProduct.Name, soldProduct.Price, soldProduct.AmountInStock });
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPut("update/{id:guid}")]
+    public IActionResult Update(Guid id, [FromBody] ProductDTO productDTO)
+    {
+        if (id == Guid.Empty) return BadRequest("Invalid ID.");
+
+        var validationResult = _productDTOValidator.Validate(productDTO);
+
+        if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
+
+        var product = new Product(
+            productDTO.Name!, 
+            productDTO.Description!, 
+            (decimal)productDTO.Price!, 
+            (int)productDTO.AmountInStock!
+        );
+
+        var updatedProduct = _productService.UpdateProduct(id, product);
+
+        return Ok(updatedProduct);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("{id:guid}")]
+    public IActionResult Delete(Guid id)
+    {
+        if (id == Guid.Empty) return BadRequest("Incorrect format.");
+
+        var deletedProduct = _productService.DeleteProduct(id);
+
+        return Ok(new { deletedProduct.ID, deletedProduct.Name });
+    }
+
+    [Authorize(Roles = "Admin,SellsAPI")]
+    [HttpGet]
+    public IActionResult GetAll() => Ok(_productService.GetAll());
 }

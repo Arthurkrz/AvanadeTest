@@ -28,11 +28,11 @@ namespace Stock.API.Architecture.Configurations
             builder.Property(x => x.AmountInStock)
                    .IsRequired();
 
-            builder.Property(p => p.CreationDate)
+            builder.Property(x => x.CreationDate)
                    .HasColumnType("datetime2")
                    .IsRequired();
 
-            builder.Property(p => p.LastModifiedDate)
+            builder.Property(x => x.LastModifiedDate)
                    .HasColumnType("datetime2");
 
             builder.ToTable("Products");

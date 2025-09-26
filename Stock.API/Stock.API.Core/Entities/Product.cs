@@ -2,6 +2,14 @@
 {
     public class Product : Entity
     {
+        public Product(string name, string description, decimal price, int amountInStock)
+        {
+            Name = name;
+            Description = description;
+            Price = price;
+            AmountInStock = amountInStock;
+        }
+
         public string Name { get; set; } = default!;
 
         public string Description { get; set; } = default!;

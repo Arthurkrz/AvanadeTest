@@ -3,6 +3,7 @@ using Stock.API.Core.Common;
 using Stock.API.Core.Contracts.Repository;
 using Stock.API.Core.Contracts.Service;
 using Stock.API.Core.Entities;
+using Stock.API.Core.Enum;
 
 namespace Stock.API.Service
 {
@@ -17,28 +18,42 @@ namespace Stock.API.Service
             _productValidator = productValidator ?? throw new ArgumentNullException(nameof(productValidator));
         }
 
-        public Response<Product> Create(Product product)
+        public Product Create(Product product)
         {
             var validationResult = _productValidator.Validate(product);
 
-            if (!validationResult.IsValid) 
-                return Response<Product>.Ko(0, validationResult.Errors.Select(e => e.ErrorMessage).ToList());
+            if (!validationResult.IsValid) throw new StockApiException(ErrorMessages.INVALIDREQUEST
+                .Replace("{error}", string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage))),
+                ErrorType.BusinessRuleViolation);
 
             return _productRepository.Create(product);
         }
 
-        public Response<Product> UpdateStock(Guid productId, int sellAmount)
+        public Product UpdateStock(Guid productId, int sellAmount)
         {
-            var response = _productRepository.GetById(productId);
+            var product = _productRepository.GetById(productId);
 
-            if (!response.Success) return response!;
-
-            if (response.Value!.AmountInStock < sellAmount)
-                return Response<Product>.Ko(0, new List<string> { "Not enough items in stock." });
-
-            int newAmountInStock = response.Value!.AmountInStock - sellAmount;
+            int newAmountInStock = product.AmountInStock - sellAmount;
 
             return _productRepository.UpdateStock(productId, newAmountInStock);
+        }
+
+        public Product UpdateProduct(Guid productId, Product product)
+        {
+            var validationResult = _productValidator.Validate(product);
+
+            if (!validationResult.IsValid) throw new StockApiException(ErrorMessages.INVALIDREQUEST
+                .Replace("{error}", string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage))), 
+                ErrorType.BusinessRuleViolation);
+
+            return _productRepository.UpdateProduct(productId, product);
+        }
+
+        public Product DeleteProduct(Guid productId)
+        {
+            var deletedProduct = _productRepository.Delete(productId);
+
+            return deletedProduct;
         }
 
         public IEnumerable<Product> GetAll() => 
