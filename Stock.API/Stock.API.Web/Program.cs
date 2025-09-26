@@ -11,6 +11,7 @@ using Stock.API.Core.Entities;
 using Stock.API.Core.Validators;
 using Stock.API.Service;
 using Stock.API.Web.DTOs;
+using Stock.API.Web.Middlewares;
 using Stock.API.Web.Utilities;
 using Stock.API.Web.Validators;
 using System.Text;
@@ -93,6 +94,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseHttpsRedirection();
 app.UseAuthentication();
