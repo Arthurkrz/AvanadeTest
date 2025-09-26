@@ -26,6 +26,15 @@ namespace Stock.API.Architecture.Configurations
                    .HasMaxLength(11)
                    .IsRequired();
 
+            builder.HasIndex(x => x.Username)
+                   .IsUnique();
+
+            builder.HasIndex(x => x.Name)
+                   .IsUnique();
+
+            builder.HasIndex(x => x.CPF)
+                   .IsUnique();
+
             builder.Property(x => x.PasswordHash)
                    .HasColumnType("varbinary(256)")
                    .IsRequired();
