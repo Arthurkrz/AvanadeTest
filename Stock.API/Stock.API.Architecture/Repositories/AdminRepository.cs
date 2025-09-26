@@ -38,6 +38,19 @@ namespace Stock.API.Architecture.Repositories
             return entity!;
         }
 
+        public Admin Update(Admin admin)
+        {
+            var existingAdmin = _context.Admins.Find(admin.Username);
+
+            if (existingAdmin is null)
+                throw new StockApiException(ErrorMessages.ADMINNOTFOUND,
+                                            ErrorType.NotFound);
+
+            _context.Entry(existingAdmin).CurrentValues.SetValues(admin);
+            _context.SaveChanges();
+            return admin;
+        }
+
         private bool IsCPFUnique(string cpf) =>
             !_context.Admins.Any(e => e.CPF == cpf);
 

@@ -6,6 +6,8 @@
 
         public const string PRODUCTNOTFOUND = "Product not found.";
 
+        public const string LOCKEDACCOUNT = "Account locked until {lockoutEnd}.";
+
         public const string INVALIDCREDENTIALS = "Invalid username and/or password.";
         
         public const string ADMINNOTUNIQUE = "Admin with a unique field (Username, Name or CPF) already exists.";

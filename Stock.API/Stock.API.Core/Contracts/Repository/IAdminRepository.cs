@@ -7,5 +7,7 @@ namespace Stock.API.Core.Contracts.Repository
         public Admin Create(Admin admin);
 
         public Admin GetByUsername(string username);
+
+        public Admin Update(Admin admin);
     }
 }

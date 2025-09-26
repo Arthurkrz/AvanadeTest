@@ -28,9 +28,34 @@ namespace Stock.API.Service
             if (admin is null) throw new StockApiException(ErrorMessages.ADMINNOTFOUND, 
                                                            ErrorType.NotFound);
 
-            return _passwordHasher.VerifyPassword(password, admin.PasswordHash,
-                                                  admin.PasswordSalt,
-                                                  admin.HashParams);
+            if (admin.LockoutEnd.HasValue &&
+                admin.LockoutEnd.Value > DateTime.UtcNow)
+                throw new StockApiException(ErrorMessages.LOCKEDACCOUNT.Replace("{lockoutEnd}", admin.LockoutEnd.ToString()),
+                                            ErrorType.BusinessRuleViolation);
+
+            if (!_passwordHasher.VerifyPassword(password, admin.PasswordHash,
+                                                          admin.PasswordSalt,
+                                                          admin.HashParams))
+            {
+                admin.FailedLoginCount++;
+
+                if (admin.FailedLoginCount >= 10)
+                {
+                    admin.LockoutEnd = DateTime.UtcNow.AddDays(1);
+                    admin.FailedLoginCount = 0;
+                }
+
+                _adminRepository.Update(admin);
+
+                throw new StockApiException(ErrorMessages.INVALIDCREDENTIALS,
+                                            ErrorType.BusinessRuleViolation);
+            }
+
+            admin.FailedLoginCount = 0;
+            admin.LockoutEnd = null;
+
+            _adminRepository.Update(admin);
+            return true;
         }
 
         public Admin Register(RegisterRequest request)

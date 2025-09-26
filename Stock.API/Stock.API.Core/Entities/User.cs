@@ -2,7 +2,10 @@
 {
     public class User : Entity
     {
-        // + login fail count, + lockout date, + is active.
         public DateTime LastLoginDate { get; set; } = DateTime.Now;
+        
+        public int FailedLoginCount { get; set; } = 0;
+
+        public DateTime? LockoutEnd { get; set; } = null;
     }
 }
