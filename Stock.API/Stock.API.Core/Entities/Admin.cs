@@ -2,6 +2,8 @@
 {
     public class Admin : User
     {
+        private Admin() { }
+
         public Admin(string username, string name, string cpf, byte[] passwordHash, byte[] passwordSalt, string hashAlgorithm, string hashParams)
         {
             Username = username;
