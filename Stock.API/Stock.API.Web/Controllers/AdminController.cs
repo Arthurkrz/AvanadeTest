@@ -38,13 +38,12 @@ namespace Stock.API.Web.Controllers
         public IActionResult Login([FromBody] string username, [FromBody] string password)
         {
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password)) 
-                return BadRequest("Empty username or/and password.");
+                return BadRequest(ErrorMessages.EMPTYCREDENTIALS);
 
             var isAuthenticated = _adminService.Login(username, password);
 
-            if (!isAuthenticated) return BadRequest("Invalid username or/and password.");
+            if (!isAuthenticated) return BadRequest(ErrorMessages.INVALIDCREDENTIALS);
 
-            // Login hour and time until expire?
             return Ok(username);
         }
     }
