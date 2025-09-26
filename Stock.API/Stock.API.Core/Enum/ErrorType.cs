@@ -3,8 +3,6 @@
     public enum ErrorType
     {
         Undefined = 0,
-
-        Conflict = 1,
         
         NotFound = 2,
         

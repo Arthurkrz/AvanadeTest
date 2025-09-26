@@ -6,14 +6,7 @@ namespace Stock.API.Web.Utilities
     public static class HTTPErrorMapper
     {
         public static IActionResult Map(ErrorType errorType, IList<string> errors) => errorType switch
-        {
-            ErrorType.Conflict => new ConflictObjectResult(new ProblemDetails()
-            {
-                Status = StatusCodes.Status409Conflict,
-                Title = "Conflict",
-                Detail = string.Join("; ", errors)
-            }),
-            
+        {   
             ErrorType.NotFound => new NotFoundObjectResult(new ProblemDetails()
             {
                 Status = StatusCodes.Status404NotFound,

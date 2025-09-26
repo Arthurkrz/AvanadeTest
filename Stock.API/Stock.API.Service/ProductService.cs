@@ -22,11 +22,9 @@ namespace Stock.API.Service
         {
             var validationResult = _productValidator.Validate(product);
 
-            if (!validationResult.IsValid)
-            {
-                var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-                throw new StockApiException(errors, (ErrorType)6);
-            }
+            if (!validationResult.IsValid) throw new StockApiException(ErrorMessages.INVALIDREQUEST
+                .Replace("{error}", string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage))),
+                ErrorType.BusinessRuleViolation);
 
             return _productRepository.Create(product);
         }
@@ -44,11 +42,9 @@ namespace Stock.API.Service
         {
             var validationResult = _productValidator.Validate(product);
 
-            if (!validationResult.IsValid)
-            {
-                var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-                throw new StockApiException(errors, (ErrorType)6);
-            }
+            if (!validationResult.IsValid) throw new StockApiException(ErrorMessages.INVALIDREQUEST
+                .Replace("{error}", string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage))), 
+                ErrorType.BusinessRuleViolation);
 
             return _productRepository.UpdateProduct(productId, product);
         }

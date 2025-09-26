@@ -3,6 +3,7 @@ using Stock.API.Core.Common;
 using Stock.API.Core.Contracts.Repository;
 using Stock.API.Core.Contracts.Service;
 using Stock.API.Core.Entities;
+using Stock.API.Core.Enum;
 
 namespace Stock.API.Service
 {
@@ -24,7 +25,8 @@ namespace Stock.API.Service
         {
             var admin = _adminRepository.GetByUsername(username);
 
-            if (admin is null) throw new Exception("");
+            if (admin is null) throw new StockApiException(ErrorMessages.ADMINNOTFOUND, 
+                                                           ErrorType.NotFound);
 
             return _passwordHasher.VerifyPassword(password, admin.PasswordHash,
                                                   admin.PasswordSalt,
@@ -35,7 +37,9 @@ namespace Stock.API.Service
         {
             var validationResult = _requestValidator.Validate(request);
 
-            if (!validationResult.IsValid) throw new Exception("");
+            if (!validationResult.IsValid) throw new StockApiException(ErrorMessages.INVALIDREQUEST
+                .Replace("{error}", string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage))), 
+                ErrorType.BusinessRuleViolation);
 
             var (hash, salt, hashParams) = _passwordHasher.HashPassword(request.Password);
 
