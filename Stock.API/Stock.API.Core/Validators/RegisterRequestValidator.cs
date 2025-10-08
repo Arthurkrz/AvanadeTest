@@ -18,7 +18,7 @@ namespace Stock.API.Core.Validators
             this.RuleFor(p => p.CPF)
                 .Length(11)
                 .WithMessage("CPF number must contain exactly 11 digits")
-                .Matches("^[0-9]{11}$")
+                .Matches("^[0-9]+$")
                 .WithMessage("CPF number must contain only digits");
 
             this.RuleFor(p => p.Password)

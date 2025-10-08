@@ -14,8 +14,8 @@ namespace Stock.API.Service
 
         public ProductService(IProductRepository productRepository, IValidator<Product> productValidator)
         {
-            _productRepository = productRepository ?? throw new ArgumentNullException(nameof(productRepository));
-            _productValidator = productValidator ?? throw new ArgumentNullException(nameof(productValidator));
+            _productRepository = productRepository;
+            _productValidator = productValidator;
         }
 
         public Product Create(Product product)
@@ -33,6 +33,8 @@ namespace Stock.API.Service
         {
             var product = _productRepository.GetById(productId);
 
+            if (product is null) throw new StockApiException(ErrorMessages.PRODUCTNOTFOUND, ErrorType.NotFound);
+
             int newAmountInStock = product.AmountInStock - sellAmount;
 
             return _productRepository.UpdateStock(productId, newAmountInStock);
@@ -41,6 +43,9 @@ namespace Stock.API.Service
         public Product UpdateProduct(Guid productId, Product product)
         {
             var validationResult = _productValidator.Validate(product);
+
+            if (_productRepository.GetById(productId) is null)
+                throw new StockApiException(ErrorMessages.PRODUCTNOTFOUND, ErrorType.NotFound);
 
             if (!validationResult.IsValid) throw new StockApiException(ErrorMessages.INVALIDREQUEST
                 .Replace("{error}", string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage))), 
@@ -51,6 +56,9 @@ namespace Stock.API.Service
 
         public Product DeleteProduct(Guid productId)
         {
+            if (_productRepository.GetById(productId) is null)
+                throw new StockApiException(ErrorMessages.PRODUCTNOTFOUND, ErrorType.NotFound);
+
             var deletedProduct = _productRepository.Delete(productId);
 
             return deletedProduct;

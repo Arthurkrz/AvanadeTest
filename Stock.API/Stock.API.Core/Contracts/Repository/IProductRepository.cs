@@ -12,8 +12,8 @@ namespace Stock.API.Core.Contracts.Repository
 
         Product Delete(Guid id);
 
-        IEnumerable<Product> GetAll();
+        IEnumerable<Product>? GetAll();
 
-        Product GetById(Guid productId);
+        Product? GetById(Guid productId);
     }
 }

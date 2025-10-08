@@ -14,16 +14,18 @@ namespace Stock.API.IOC
         public static void InjectServices(this IServiceCollection services)
         {
             services.AddSingleton<IProductService, ProductService>();
+            services.AddSingleton<IAdminService, AdminService>();
         }
 
         public static void InjectRepositories(this IServiceCollection services)
         {
             services.AddSingleton<IProductRepository, ProductRepository>();
+            services.AddSingleton<IAdminRepository, AdminRepository>();
         }
 
         public static void InjectValidators(this IServiceCollection services)
         {
-            services.AddSingleton<IValidator<Product>, ProductValidator>();
+            services.AddSingleton<IValidator<Product>, IProductValidator>();
         }
     }
 }
