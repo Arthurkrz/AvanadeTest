@@ -24,7 +24,10 @@ namespace Stock.API.Web.Controllers
         [HttpPost("register")]
         public IActionResult Register(AdminDTO adminDTO)
         {
-            _adminDTOValidator.ValidateAndThrow(adminDTO);
+            var validationResult = _adminDTOValidator.Validate(adminDTO);
+
+            if (!validationResult.IsValid) return BadRequest(ErrorMessages.INVALIDREQUEST
+                .Replace("{error}", string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage))));
 
             var request = new RegisterRequest(adminDTO.Username!, adminDTO.Name!,
                                               adminDTO.CPF!, adminDTO.Password!);

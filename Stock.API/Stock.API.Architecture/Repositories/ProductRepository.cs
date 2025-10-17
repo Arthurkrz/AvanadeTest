@@ -29,7 +29,7 @@ namespace Stock.API.Architecture.Repositories
             return product!;
         }
 
-        public IEnumerable<Product>? GetAll() =>
+        public IEnumerable<Product> GetAll() =>
             _context.Set<Product>().AsQueryable();
 
         public Product? GetById(Guid productId) => 

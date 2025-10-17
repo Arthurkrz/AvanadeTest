@@ -85,5 +85,12 @@ public class ProductController : ControllerBase
 
     [Authorize(Roles = "Admin,SellsAPI")]
     [HttpGet]
-    public IActionResult GetAll() => Ok(_productService.GetAll());
+    public IActionResult GetAll()
+    {
+        var products = _productService.GetAll();
+
+        if (!products.Any()) return BadRequest("No products available.");
+
+        return Ok(products);
+    }
 }

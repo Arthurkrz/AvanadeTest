@@ -1,5 +1,4 @@
-﻿using Stock.API.Core.Common;
-using Stock.API.Core.Entities;
+﻿using Stock.API.Core.Entities;
 
 namespace Stock.API.Core.Contracts.Service
 {

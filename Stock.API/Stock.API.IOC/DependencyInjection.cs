@@ -1,6 +1,10 @@
 ﻿using FluentValidation;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Stock.API.Architecture;
 using Stock.API.Architecture.Repositories;
+using Stock.API.Core.Common;
 using Stock.API.Core.Contracts.Repository;
 using Stock.API.Core.Contracts.Service;
 using Stock.API.Core.Entities;
@@ -15,17 +19,22 @@ namespace Stock.API.IOC
         {
             services.AddSingleton<IProductService, ProductService>();
             services.AddSingleton<IAdminService, AdminService>();
+            services.AddSingleton<IPasswordHasher, PasswordHasher>();
         }
 
-        public static void InjectRepositories(this IServiceCollection services)
+        public static void InjectRepositories(this IServiceCollection services, IConfiguration config)
         {
+            services.AddDbContext<Context>(options => 
+                options.UseSqlServer(config.GetConnectionString("DefaultConnection")));
+
             services.AddSingleton<IProductRepository, ProductRepository>();
             services.AddSingleton<IAdminRepository, AdminRepository>();
         }
 
         public static void InjectValidators(this IServiceCollection services)
         {
-            services.AddSingleton<IValidator<Product>, IProductValidator>();
+            services.AddSingleton<IValidator<Product>, ProductValidator>();
+            services.AddSingleton<IValidator<RegisterRequest>, RegisterRequestValidator>();
         }
     }
 }
