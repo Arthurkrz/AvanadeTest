@@ -46,9 +46,7 @@ namespace Stock.API.Service
                 }
 
                 _adminRepository.Update(admin);
-
-                throw new StockApiException(ErrorMessages.INVALIDCREDENTIALS,
-                                            ErrorType.BusinessRuleViolation);
+                return false;
             }
 
             admin.FailedLoginCount = 0;

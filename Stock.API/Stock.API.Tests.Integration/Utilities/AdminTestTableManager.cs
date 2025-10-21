@@ -22,7 +22,7 @@ namespace Stock.API.Tests.Integration.Utilities
         public void Cleanup() =>
             _context.Database.ExecuteSqlRaw("TRUNCATE TABLE Admins");
 
-        public void InsertAdmin(int numberOfAdminsToInsert)
+        public void InsertAdmin(int numberOfAdminsToInsert = 1)
         {
             for (int adminNumber = 0; adminNumber < numberOfAdminsToInsert; adminNumber++)
             {

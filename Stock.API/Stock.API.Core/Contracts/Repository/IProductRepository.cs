@@ -14,6 +14,6 @@ namespace Stock.API.Core.Contracts.Repository
 
         IEnumerable<Product> GetAll();
 
-        Product? GetById(Guid productId);
+        Product GetById(Guid productId);
     }
 }

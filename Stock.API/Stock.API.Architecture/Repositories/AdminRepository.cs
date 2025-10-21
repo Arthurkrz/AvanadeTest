@@ -20,12 +20,12 @@ namespace Stock.API.Architecture.Repositories
             return admin;
         }
 
-        public Admin? GetByUsername(string username) => 
-            _context.Admins.Find(username)!;
+        public Admin GetByUsername(string username) => 
+            _context.Admins.FirstOrDefault(a => a.Username == username)!;
 
         public Admin Update(Admin admin)
         {
-            var existingAdmin = _context.Admins.Find(admin.Username);
+            var existingAdmin = GetByUsername(admin.Username);
 
             _context.Entry(existingAdmin!).CurrentValues.SetValues(admin);
             _context.SaveChanges();

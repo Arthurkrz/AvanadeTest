@@ -1,7 +1,5 @@
-﻿using FluentAssertions;
-using FluentValidation;
+﻿using FluentValidation;
 using FluentValidation.Results;
-using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Stock.API.Core.Common;
 using Stock.API.Core.Contracts.Repository;
@@ -76,11 +74,7 @@ namespace Stock.API.Tests.Services
                 It.IsAny<byte[]>(), It.IsAny<string>())).Returns(false);
 
             // Act & Assert
-            var ex = Assert.Throws<StockApiException>(() => 
-                _sut.Login("Username", "Password"));
-
-            Assert.Equal(ErrorMessages.INVALIDCREDENTIALS, ex.Message);
-            Assert.Equal(ErrorType.BusinessRuleViolation, ex.ErrorType);
+            Assert.False(_sut.Login("Username", "Password"));
         }
 
         [Fact]
@@ -127,36 +121,6 @@ namespace Stock.API.Tests.Services
         }
 
         [Fact]
-        public void Login_ShouldAddFailedLoginCount_WhenPasswordIsInvalid()
-        {
-            // Arrange
-            var admin = new Admin
-            (
-                "Username", "Name", "CPF",
-                new byte[] { 1, 2, 3 },
-                new byte[] { 1, 2, 3 },
-                "HashAlgorithm", "Params"
-            );
-
-            _adminRepositoryMock.Setup(x => x.GetByUsername(
-                It.IsAny<string>())).Returns(admin);
-
-            _passwordHasherMock.Setup(x => x.VerifyPassword(
-                It.IsAny<string>(), It.IsAny<byte[]>(),
-                It.IsAny<byte[]>(), It.IsAny<string>())).Returns(false);
-
-            // Act & Assert
-            var ex = Assert.Throws<StockApiException>(() =>
-                _sut.Login("Username", "Password"));
-
-            _adminRepositoryMock.Verify(x => x.Update(
-                It.IsAny<Admin>()), Times.Once());
-
-            Assert.Equal(ErrorMessages.INVALIDCREDENTIALS, ex.Message);
-            Assert.Equal(ErrorType.BusinessRuleViolation, ex.ErrorType);
-        }
-
-        [Fact]
         public void Login_ShouldLockAccount_WhenFailedLoginCountExceedsLimit()
         {
             // Arrange
@@ -178,14 +142,10 @@ namespace Stock.API.Tests.Services
                 It.IsAny<byte[]>(), It.IsAny<string>())).Returns(false);
 
             // Act & Assert
-            var ex = Assert.Throws<StockApiException>(() =>
-                _sut.Login("Username", "Password"));
+            Assert.False(_sut.Login("Username", "Password"));
 
             _adminRepositoryMock.Verify(x => x.Update(
                 It.IsAny<Admin>()), Times.Once());
-
-            Assert.Equal(ErrorMessages.INVALIDCREDENTIALS, ex.Message);
-            Assert.Equal(ErrorType.BusinessRuleViolation, ex.ErrorType);
         }
 
         [Fact]

@@ -19,7 +19,7 @@ namespace Stock.API.Tests.Integration.Utilities
         public void Cleanup() =>
             _context.Database.ExecuteSqlRaw("TRUNCATE TABLE Products");
 
-        public void InsertProduct(int numberOfProductsToInsert)
+        public void InsertProduct(int numberOfProductsToInsert = 1)
         {
             for (int productNumber = 0; productNumber < numberOfProductsToInsert; productNumber++)
             {

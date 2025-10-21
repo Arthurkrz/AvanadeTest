@@ -1,4 +1,5 @@
 using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -72,8 +73,12 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 builder.Services.AddScoped<JwtTokenService>();
-builder.Services.AddScoped<IValidator<Product>, ProductValidator>();
-builder.Services.AddScoped<IValidator<ProductDTO>, ProductDTOValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<ProductValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<ProductDTOValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<AdminDTOValidator>();
+
+builder.Services.AddControllers();
+builder.Services.AddFluentValidationAutoValidation();
 
 builder.Services.InjectRepositories(builder.Configuration);
 builder.Services.InjectServices();

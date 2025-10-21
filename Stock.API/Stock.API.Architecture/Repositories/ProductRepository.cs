@@ -32,14 +32,17 @@ namespace Stock.API.Architecture.Repositories
         public IEnumerable<Product> GetAll() =>
             _context.Set<Product>().AsQueryable();
 
-        public Product? GetById(Guid productId) => 
+        public Product GetById(Guid productId) => 
             _context.Products.Find(productId)!;
 
         public Product UpdateProduct(Guid productId, Product product)
         {
-            var existingEntity = _context.Set<Product>().Find(productId);
+            var existingEntity = _context.Set<Product>().Find(productId)!;
 
-            _context.Entry(existingEntity!).CurrentValues.SetValues(product);
+            existingEntity.Name = product.Name;
+            existingEntity.Description = product.Description;
+            existingEntity.Price = product.Price;
+            existingEntity.AmountInStock = product.AmountInStock;
             _context.SaveChanges();
 
             return product;

@@ -8,28 +8,20 @@ namespace Stock.API.Web.Validators
         public AdminDTOValidator()
         {
             this.RuleFor(p => p.Username)
-                .NotNull()
-                .WithMessage("Username must not be null")
                 .NotEmpty()
-                .WithMessage("Username must not be empty");
+                .WithMessage("Username must not be null or empty");
 
             this.RuleFor(p => p.Name)
-                .NotNull()
-                .WithMessage("Name must not be null")
                 .NotEmpty()
-                .WithMessage("Name must not be empty");
+                .WithMessage("Name must not be null or empty");
 
             this.RuleFor(p => p.CPF)
-                .NotNull()
-                .WithMessage("CPF must not be null")
                 .NotEmpty()
-                .WithMessage("CPF must not be empty");
+                .WithMessage("CPF must not be null or empty");
 
             this.RuleFor(p => p.Password)
-                .NotNull()
-                .WithMessage("Password must not be null")
                 .NotEmpty()
-                .WithMessage("Password must not be empty");
+                .WithMessage("Password must not be null or empty");
         }
     }
 }
