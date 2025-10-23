@@ -10,6 +10,8 @@ using Stock.API.Core.Contracts.Service;
 using Stock.API.Core.Entities;
 using Stock.API.Core.Validators;
 using Stock.API.Service;
+using Stock.API.Service.MessageConsumerServices.BackgroundServices;
+using Stock.API.Service.MessageConsumerServices.Configurations;
 using Stock.API.Web.DTOs;
 using Stock.API.Web.Middlewares;
 using Stock.API.Web.Utilities;
@@ -73,6 +75,9 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+
+builder.Services.Configure<RabbitMQSettings>(builder.Configuration.GetSection("RabbitMq"));
+builder.Services.AddHostedService<ConsumerService>();
 
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddScoped<IValidator<Product>, ProductValidator>();
