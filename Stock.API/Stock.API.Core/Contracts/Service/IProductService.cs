@@ -1,5 +1,4 @@
-﻿using Stock.API.Core.Common;
-using Stock.API.Core.Entities;
+﻿using Stock.API.Core.Entities;
 
 namespace Stock.API.Core.Contracts.Service
 {
@@ -7,7 +6,7 @@ namespace Stock.API.Core.Contracts.Service
     {
         Product Create(Product product);
 
-        Product UpdateStock(Guid productId, int newAmountInStock);
+        Product UpdateStock(Guid productId, int sellAmount);
 
         Product UpdateProduct(Guid productId, Product product);
 
