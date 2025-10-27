@@ -1,4 +1,4 @@
-﻿namespace Sells.API.Service
+﻿namespace Sales.API.Core
 {
     public class Class1
     {

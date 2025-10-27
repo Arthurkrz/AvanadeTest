@@ -1,4 +1,4 @@
-﻿namespace Sells.API.Core
+﻿namespace Sales.API.IOC
 {
     public class Class1
     {
