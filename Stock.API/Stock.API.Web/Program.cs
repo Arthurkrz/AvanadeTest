@@ -7,6 +7,7 @@ using Stock.API.Architecture;
 using Stock.API.Architecture.Repositories;
 using Stock.API.Core.Contracts.Repository;
 using Stock.API.Core.Contracts.Service;
+using Stock.API.IOC;
 using Stock.API.Core.Entities;
 using Stock.API.Core.Validators;
 using Stock.API.Service;
@@ -84,6 +85,12 @@ builder.Services.AddScoped<IValidator<Product>, ProductValidator>();
 builder.Services.AddScoped<IValidator<ProductDTO>, ProductDTOValidator>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+
+builder.Services.InjectRepositories(builder.Configuration);
+builder.Services.InjectServices();
+builder.Services.InjectRabbitMQ(builder.Configuration);
+builder.Services.InjectHandlers();
+builder.Services.InjectValidators();
 
 builder.Services.AddControllers();
 builder.Services.AddAuthorization();

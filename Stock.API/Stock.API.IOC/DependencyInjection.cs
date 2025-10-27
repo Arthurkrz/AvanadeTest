@@ -1,6 +1,8 @@
 ﻿using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Stock.API.Architecture;
 using Stock.API.Architecture.Repositories;
 using Stock.API.Core.Contracts.Handler;
 using Stock.API.Core.Contracts.Repository;
@@ -18,17 +20,20 @@ namespace Stock.API.IOC
     {
         public static void InjectServices(this IServiceCollection services)
         {
-            services.AddSingleton<IProductService, ProductService>();
+            services.AddScoped<IProductService, ProductService>();
         }
 
-        public static void InjectRepositories(this IServiceCollection services)
+        public static void InjectRepositories(this IServiceCollection services, IConfiguration config)
         {
-            services.AddSingleton<IProductRepository, ProductRepository>();
+            services.AddDbContext<Context>(options =>
+                options.UseSqlServer(config.GetConnectionString("DefaultConnection")));
+
+            services.AddScoped<IProductRepository, ProductRepository>();
         }
 
         public static void InjectValidators(this IServiceCollection services)
         {
-            services.AddSingleton<IValidator<Product>, ProductValidator>();
+            services.AddScoped<IValidator<Product>, ProductValidator>();
         }
 
         public static IServiceCollection InjectRabbitMQ(this IServiceCollection services, IConfiguration config)
@@ -41,7 +46,7 @@ namespace Stock.API.IOC
 
         public static IServiceCollection InjectHandlers(this IServiceCollection services)
         {
-            services.AddSingleton<IMessageHandler, SaleMessageHandler>();
+            services.AddScoped<IMessageHandler, SaleMessageHandler>();
             return services;
         }
     }
