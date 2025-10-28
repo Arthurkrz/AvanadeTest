@@ -1,15 +1,10 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Stock.API.Architecture;
-using Stock.API.Architecture.Repositories;
-using Stock.API.Core.Contracts.Repository;
-using Stock.API.Core.Contracts.Service;
 using Stock.API.Core.Entities;
 using Stock.API.Core.Validators;
-using Stock.API.Service;
+using Stock.API.IOC;
 using Stock.API.Web.DTOs;
 using Stock.API.Web.Middlewares;
 using Stock.API.Web.Utilities;
@@ -77,15 +72,15 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddScoped<IValidator<Product>, ProductValidator>();
 builder.Services.AddScoped<IValidator<ProductDTO>, ProductDTOValidator>();
-builder.Services.AddScoped<IProductService, ProductService>();
-builder.Services.AddScoped<IProductRepository, ProductRepository>();
+
+builder.Services.InjectRepositories(builder.Configuration);
+builder.Services.InjectServices();
+builder.Services.InjectValidators();
+builder.Services.InjectRabbitMQ(builder.Configuration);
 
 builder.Services.AddControllers();
 builder.Services.AddAuthorization();
 builder.Services.AddEndpointsApiExplorer();
-
-builder.Services.AddDbContext<Context>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
