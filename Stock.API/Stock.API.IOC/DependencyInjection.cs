@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Stock.API.Architecture;
 using Stock.API.Architecture.Repositories;
+using Stock.API.Core.Common;
 using Stock.API.Core.Contracts.Handler;
 using Stock.API.Core.Contracts.Repository;
 using Stock.API.Core.Contracts.Service;
@@ -20,7 +21,9 @@ namespace Stock.API.IOC
     {
         public static void InjectServices(this IServiceCollection services)
         {
+            services.AddScoped<IPasswordHasher, PasswordHasher>();
             services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IAdminService, AdminService>();
         }
 
         public static void InjectRepositories(this IServiceCollection services, IConfiguration config)
@@ -29,24 +32,26 @@ namespace Stock.API.IOC
                 options.UseSqlServer(config.GetConnectionString("DefaultConnection")));
 
             services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IAdminRepository, AdminRepository>();
         }
 
         public static void InjectValidators(this IServiceCollection services)
         {
             services.AddScoped<IValidator<Product>, ProductValidator>();
+            services.AddScoped<IValidator<RegisterRequest>, RegisterRequestValidator>();
         }
 
         public static IServiceCollection InjectRabbitMQ(this IServiceCollection services, IConfiguration config)
         {
             services.Configure<RabbitMQSettings>(config.GetSection("RabbitMQ"));
-            services.AddScoped<IMessageHandler, SaleMessageHandler>();
-            services.AddHostedService<ConsumerService>();
-            return services;
-        }
 
-        public static IServiceCollection InjectHandlers(this IServiceCollection services)
-        {
-            services.AddScoped<IMessageHandler, SaleMessageHandler>();
+            services.Scan(scan => scan
+                .FromAssemblyOf<SaleMessageHandler>()
+                .AddClasses(classes => classes.AssignableTo<IMessageHandler>())
+                .AsSelfWithInterfaces()
+                .WithScopedLifetime());
+
+            services.AddHostedService<ConsumerService>();
             return services;
         }
     }
