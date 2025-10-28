@@ -39,18 +39,6 @@ public class ProductController : ControllerBase
         return Ok(createdProduct);
     }
 
-    [Authorize(Roles = "Admin,SellsAPI")]
-    [HttpPut("{id:guid}")]
-    public IActionResult Sell(Guid id, [FromBody] int sellAmount)
-    {
-        if (id == Guid.Empty || sellAmount <= 0)
-            return BadRequest(ErrorMessages.INCORRECTFORMAT);
-
-        var soldProduct = _productService.UpdateStock(id, sellAmount);
-
-        return Ok(soldProduct);
-    }
-
     [Authorize(Roles = "Admin")]
     [HttpPut("update/{id:guid}")]
     public IActionResult Update(Guid id, [FromBody] ProductDTO productDTO)

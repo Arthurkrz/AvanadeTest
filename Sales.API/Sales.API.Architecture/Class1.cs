@@ -1,4 +1,4 @@
-﻿namespace Sells.API.Architecture
+﻿namespace Sales.API.Architecture
 {
     public class Class1
     {

@@ -38,8 +38,11 @@ namespace Stock.API.Web.Controllers
         }
 
         [HttpPost("login")]
-        public IActionResult Login([FromBody] string username, [FromBody] string password)
+        public IActionResult Login([FromBody] LoginRequest loginRequest)
         {
+            var username = loginRequest.Username;
+            var password = loginRequest.Password;
+
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password)) 
                 return BadRequest(ErrorMessages.EMPTYCREDENTIALS);
 

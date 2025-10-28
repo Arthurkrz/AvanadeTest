@@ -1,4 +1,4 @@
-namespace Sells.API.Tests
+namespace Sales.API.Tests.Integration
 {
     public class UnitTest1
     {
