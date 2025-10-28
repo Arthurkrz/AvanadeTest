@@ -1,21 +1,21 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35828.75 d17.13
+VisualStudioVersion = 17.13.35828.75
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sells.API", "Sells.API\Sells.API.csproj", "{71FF47C9-6990-4AE2-B7B1-4C22A109123F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sales.API.Web", "Sales.API.Web\Sales.API.Web.csproj", "{71FF47C9-6990-4AE2-B7B1-4C22A109123F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sells.API.IOC", "Sells.API.IOC\Sells.API.IOC.csproj", "{C155413A-9367-4741-BE9D-B36F070AFA4B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sales.API.IOC", "Sales.API.IOC\Sales.API.IOC.csproj", "{C155413A-9367-4741-BE9D-B36F070AFA4B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sells.API.Architecture", "Sells.API.Architecture\Sells.API.Architecture.csproj", "{276A6230-E253-4686-B6DC-03C0BB23C8DE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sales.API.Architecture", "Sales.API.Architecture\Sales.API.Architecture.csproj", "{276A6230-E253-4686-B6DC-03C0BB23C8DE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sells.API.Service", "Sells.API.Service\Sells.API.Service.csproj", "{4787FB56-CF4E-4F51-9B3A-DFB483F8B7E0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sales.API.Service", "Sales.API.Service\Sales.API.Service.csproj", "{4787FB56-CF4E-4F51-9B3A-DFB483F8B7E0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sells.API.Tests", "Sells.API.Tests\Sells.API.Tests.csproj", "{786353C9-2E3F-4C8A-AD39-439EA24430B3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sales.API.Tests", "Sales.API.Tests\Sales.API.Tests.csproj", "{786353C9-2E3F-4C8A-AD39-439EA24430B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sells.API.Tests.Integration", "Sells.API.Tests.Integration\Sells.API.Tests.Integration.csproj", "{A8A8514B-1775-4188-B272-48B2FF586370}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sales.API.Tests.Integration", "Sales.API.Tests.Integration\Sales.API.Tests.Integration.csproj", "{A8A8514B-1775-4188-B272-48B2FF586370}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sells.API.Core", "Sells.API.Core\Sells.API.Core.csproj", "{F54D6898-75B4-4FA3-8EE2-C59120733D23}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sales.API.Core", "Sales.API.Core\Sales.API.Core.csproj", "{F54D6898-75B4-4FA3-8EE2-C59120733D23}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
