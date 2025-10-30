@@ -4,7 +4,7 @@ namespace Stock.API.Core.Common
 {
     public class StockApiException : Exception
     {
-        public StockApiException(string error, ErrorType errorType)
+        public StockApiException(string error, ErrorType errorType) : base(error)
         {
             Error = error;
             ErrorType = errorType;

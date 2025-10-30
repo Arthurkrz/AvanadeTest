@@ -77,7 +77,7 @@ namespace Stock.API.Service.MessageConsumerServices.BackgroundServices
                 var json = Encoding.UTF8.GetString(ea.Body.ToArray());
                 var message = JsonSerializer.Deserialize<ProductSaleDTO>(json);
 
-                if (message is null)
+                if (message is null || message.ProductID == Guid.Empty || message.SoldAmount <= 0)
                 {
                     _logger.LogWarning("Received null or invalid message.");
                     await _channel!.BasicNackAsync(ea.DeliveryTag, false, requeue: false);

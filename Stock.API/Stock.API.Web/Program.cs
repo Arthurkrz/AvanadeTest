@@ -1,7 +1,9 @@
 using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Stock.API.Architecture;
 using Stock.API.Core.Entities;
 using Stock.API.Core.Validators;
 using Stock.API.IOC;
@@ -77,8 +79,17 @@ builder.Services.InjectRepositories(builder.Configuration);
 builder.Services.InjectServices();
 builder.Services.InjectValidators();
 builder.Services.InjectRabbitMQ(builder.Configuration);
+builder.Services.AddValidatorsFromAssemblyContaining<ProductValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<ProductDTOValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<AdminDTOValidator>();
 
 builder.Services.AddControllers();
+builder.Services.AddFluentValidationAutoValidation();
+
+builder.Services.InjectRepositories(builder.Configuration);
+builder.Services.InjectServices();
+builder.Services.InjectValidators();
+
 builder.Services.AddAuthorization();
 builder.Services.AddEndpointsApiExplorer();
 

@@ -7,25 +7,21 @@ namespace Stock.API.Web.Validators
     {
         public ProductDTOValidator()
         {
-            this.RuleFor(p => p.Name)
-                .NotNull()
-                .WithMessage("Product name must not be null")                     
+            this.RuleFor(p => p.Name)                 
                 .NotEmpty()
-                .WithMessage("Product name must not be empty");
+                .WithMessage("Product name must not be null or empty");
 
             this.RuleFor(p => p.Description)
-                .NotNull()
-                .WithMessage("Product description must not be null")
                 .NotEmpty()
-                .WithMessage("Product description must not be empty");
+                .WithMessage("Product description must not be null or empty");
 
             this.RuleFor(p => p.Price)
-                .NotNull()
-                .WithMessage("Product price must not be null");
+                .GreaterThan(0)
+                .WithMessage("Product price must not be zero or negative");
 
             this.RuleFor(p => p.AmountInStock)
-                .NotNull()
-                .WithMessage("Product amount in stock must not be null");
+                .GreaterThanOrEqualTo(0)
+                .WithMessage("Product amount must not be negative");
         }
     }
 }

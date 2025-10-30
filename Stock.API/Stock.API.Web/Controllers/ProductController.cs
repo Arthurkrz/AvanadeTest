@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Stock.API.Core.Common;
 using Stock.API.Core.Contracts.Service;
 using Stock.API.Core.Entities;
 using Stock.API.Web.DTOs;
@@ -35,14 +36,14 @@ public class ProductController : ControllerBase
 
         var createdProduct = _productService.Create(product);
         
-        return Ok(new { createdProduct.ID, createdProduct.Name, createdProduct.Price, createdProduct.AmountInStock });
+        return Ok(createdProduct);
     }
 
     [Authorize(Roles = "Admin")]
     [HttpPut("update/{id:guid}")]
     public IActionResult Update(Guid id, [FromBody] ProductDTO productDTO)
     {
-        if (id == Guid.Empty) return BadRequest("Invalid ID.");
+        if (id == Guid.Empty) return BadRequest(ErrorMessages.INCORRECTFORMAT);
 
         var validationResult = _productDTOValidator.Validate(productDTO);
 
@@ -64,7 +65,7 @@ public class ProductController : ControllerBase
     [HttpDelete("{id:guid}")]
     public IActionResult Delete(Guid id)
     {
-        if (id == Guid.Empty) return BadRequest("Incorrect format.");
+        if (id == Guid.Empty) return BadRequest(ErrorMessages.INCORRECTFORMAT);
 
         var deletedProduct = _productService.DeleteProduct(id);
 
@@ -73,5 +74,12 @@ public class ProductController : ControllerBase
 
     [Authorize(Roles = "Admin,SellsAPI")]
     [HttpGet]
-    public IActionResult GetAll() => Ok(_productService.GetAll());
+    public IActionResult GetAll()
+    {
+        var products = _productService.GetAll();
+
+        if (!products.Any()) return BadRequest(ErrorMessages.NOPRODUCTSFOUND);
+
+        return Ok(products);
+    }
 }

@@ -19,5 +19,9 @@
         public const string INTERNALERROR = "An unexpected internal error occurred: {error}";
 
         public const string INVALIDREQUEST = "The request is invalid: {error}";
+
+        public const string NOPRODUCTSFOUND = "No products available.";
+
+        public const string INCORRECTFORMAT = "Incorrect format.";
     }
 }

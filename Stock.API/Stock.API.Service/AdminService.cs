@@ -41,14 +41,12 @@ namespace Stock.API.Service
 
                 if (admin.FailedLoginCount >= 10)
                 {
-                    admin.LockoutEnd = DateTime.UtcNow.AddDays(1);
+                    admin.LockoutEnd = DateTime.UtcNow.AddDays(1).Date;
                     admin.FailedLoginCount = 0;
                 }
 
                 _adminRepository.Update(admin);
-
-                throw new StockApiException(ErrorMessages.INVALIDCREDENTIALS,
-                                            ErrorType.BusinessRuleViolation);
+                return false;
             }
 
             admin.FailedLoginCount = 0;

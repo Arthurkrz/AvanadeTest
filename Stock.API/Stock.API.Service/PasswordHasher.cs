@@ -25,7 +25,7 @@ namespace Stock.API.Service
             };
 
             byte[] hash = argon2.GetBytes(hashLength);
-            string hashParams = $"m={memorySize},i={iterations},p={parallelism};len={hashLength}";
+            string hashParams = $"m={memorySize};i={iterations};p={parallelism};len={hashLength}";
 
             return (hash, salt, hashParams);
         }
