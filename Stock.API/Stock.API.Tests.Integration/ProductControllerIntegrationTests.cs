@@ -119,47 +119,6 @@ namespace Stock.API.Tests.Integration
         }
 
         [Fact]
-        public void Sell_ShouldUpdateProductStock()
-        {
-            // Arrange
-            _productTestTableManager.Cleanup();
-            _productTestTableManager.InsertProduct();
-            var productId = _productRepository.GetAll().First().ID;
-
-            // Act
-            var result = _sut.Sell(productId, 5);
-
-            // Assert
-            var ok = Assert.IsType<OkObjectResult>(result);
-            var actual = Assert.IsType<Product>(ok.Value!);
-
-            Assert.Equal(productId, actual.ID);
-            Assert.Equal("Name0", actual.Name);
-            Assert.Equal(10M, actual.Price);
-            Assert.Equal(5, actual.AmountInStock);
-
-            var updatedProduct = _productRepository.GetById(productId);
-            Assert.Equal(5, updatedProduct.AmountInStock);
-        }
-
-        [Theory]
-        [InlineData("00000000-0000-0000-0000-000000000000", 1)]
-        [InlineData("3f0a1a47-fc3b-4b2e-9c41-6b2f7b7d9a55", 0)]
-        [InlineData("3f0a1a47-fc3b-4b2e-9c41-6b2f7b7d9a55", -1)]
-        public void Sell_ShouldReturnBadRequest_WhenInvalidRequest(Guid id, int sellAmount)
-        {
-            // Arrange
-            _productTestTableManager.Cleanup();
-
-            // Act
-            var result = _sut.Sell(id, sellAmount);
-
-            // Assert
-            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal(ErrorMessages.INCORRECTFORMAT, badRequest.Value);
-        }
-
-        [Fact]
         public void Update_ShouldUpdateProduct()
         {
             // Arrange

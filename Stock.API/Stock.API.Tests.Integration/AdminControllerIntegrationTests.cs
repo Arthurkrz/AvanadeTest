@@ -120,9 +120,11 @@ namespace Stock.API.Tests.Integration
             // Arrange
             _adminTestTableManager.Cleanup();
             _adminTestTableManager.InsertAdmin();
+            var loginRequest = new LoginRequest 
+            { Password = "Password0", Username = "Username0" };
 
             // Act
-            var result = _sut.Login("Username0", "Password0");
+            var result = _sut.Login(loginRequest);
 
             // Assert
             var ok = Assert.IsType<OkObjectResult>(result);
@@ -134,9 +136,10 @@ namespace Stock.API.Tests.Integration
         {
             // Arrange
             _adminTestTableManager.Cleanup();
+            var loginRequest = new LoginRequest { Password = "", Username = "" };
 
             // Act
-            var result = _sut.Login(string.Empty, string.Empty);
+            var result = _sut.Login(loginRequest);
 
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
@@ -149,9 +152,11 @@ namespace Stock.API.Tests.Integration
             // Arrange
             _adminTestTableManager.Cleanup();
             _adminTestTableManager.InsertAdmin();
+            var loginRequest = new LoginRequest 
+            { Password = "WrongPassword", Username = "Username0" };
 
             // Act
-            var result = _sut.Login("Username0", "WrongPassword");
+            var result = _sut.Login(loginRequest);
 
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
