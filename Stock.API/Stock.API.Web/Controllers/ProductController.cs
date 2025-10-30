@@ -72,7 +72,7 @@ public class ProductController : ControllerBase
         return Ok(new { deletedProduct.ID, deletedProduct.Name });
     }
 
-    [Authorize(Roles = "Admin,SellsAPI")]
+    [Authorize(Roles = "Admin,SalesAPI")]
     [HttpGet]
     public IActionResult GetAll()
     {

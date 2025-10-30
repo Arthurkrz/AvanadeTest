@@ -5,7 +5,6 @@ using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Stock.API.Core.Contracts.Handler;
-using Stock.API.Core.Contracts.Service;
 using Stock.API.Service.MessageConsumerServices.Configurations;
 using Stock.API.Service.MessageConsumerServices.Constants;
 using Stock.API.Service.MessageConsumerServices.Handlers;
