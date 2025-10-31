@@ -1,4 +1,6 @@
-﻿using System.Security.Cryptography;
+﻿using Identity.API.Core.Contracts.Service;
+using Konscious.Security.Cryptography;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Identity.API.Service

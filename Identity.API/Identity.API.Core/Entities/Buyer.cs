@@ -1,6 +1,6 @@
 ﻿namespace Identity.API.Core.Entities
 {
-    public class User
+    public class Buyer
     {
 
     }

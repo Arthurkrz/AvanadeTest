@@ -1,4 +1,7 @@
-﻿namespace Identity.API.Architecture.Repositories
+﻿using Identity.API.Core.Contracts.Repository;
+using Identity.API.Core.Entities;
+
+namespace Identity.API.Architecture.Repositories
 {
     public class AdminRepository : IAdminRepository
     {

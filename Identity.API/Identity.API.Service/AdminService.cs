@@ -1,4 +1,11 @@
-﻿namespace Identity.API.Service
+﻿using FluentValidation;
+using Identity.API.Core.Common;
+using Identity.API.Core.Contracts.Repository;
+using Identity.API.Core.Contracts.Service;
+using Identity.API.Core.Entities;
+using Identity.API.Core.Enum;
+
+namespace Identity.API.Service
 {
     public class AdminService : IAdminService
     {
@@ -18,13 +25,13 @@
         {
             var admin = _adminRepository.GetByUsername(username);
 
-            if (admin is null) throw new StockApiException(ErrorMessages.ADMINNOTFOUND,
-                                                           ErrorType.NotFound);
+            if (admin is null) throw new IdentityApiException(ErrorMessages.ADMINNOTFOUND,
+                                                              ErrorType.NotFound);
 
             if (admin.LockoutEnd.HasValue &&
                 admin.LockoutEnd.Value > DateTime.UtcNow)
-                throw new StockApiException(ErrorMessages.LOCKEDACCOUNT.Replace("{lockoutEnd}", admin.LockoutEnd.ToString()),
-                                            ErrorType.BusinessRuleViolation);
+                throw new IdentityApiException(ErrorMessages.LOCKEDACCOUNT.Replace("{lockoutEnd}", admin.LockoutEnd.ToString()),
+                                               ErrorType.BusinessRuleViolation);
 
             if (!_passwordHasher.VerifyPassword(password, admin.PasswordHash,
                                                           admin.PasswordSalt,
@@ -53,7 +60,7 @@
         {
             var validationResult = _requestValidator.Validate(request);
 
-            if (!validationResult.IsValid) throw new StockApiException(ErrorMessages.INVALIDREQUEST
+            if (!validationResult.IsValid) throw new IdentityApiException(ErrorMessages.INVALIDREQUEST
                 .Replace("{error}", string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage))),
                 ErrorType.BusinessRuleViolation);
 

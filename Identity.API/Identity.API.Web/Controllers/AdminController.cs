@@ -1,8 +1,11 @@
+using FluentValidation;
+using Identity.API.Core.Common;
+using Identity.API.Core.Contracts.Service;
+using Identity.API.Web.DTOs;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Identity.API.Controllers;
+namespace Identity.API.Web.Controllers;
 
 [Authorize]
 [ApiController]

@@ -1,4 +1,8 @@
-﻿namespace Identity.API.Architecture.Configurations
+﻿using Identity.API.Core.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace Identity.API.Architecture.Configurations
 {
     public class AdminConfiguration : IEntityTypeConfiguration<Admin>
     {

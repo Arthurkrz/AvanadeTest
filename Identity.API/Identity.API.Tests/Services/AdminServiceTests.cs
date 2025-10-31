@@ -1,4 +1,13 @@
-using System.ComponentModel.DataAnnotations;
+using FluentValidation;
+using FluentValidation.Results;
+using Identity.API.Core.Common;
+using Identity.API.Core.Contracts.Repository;
+using Identity.API.Core.Contracts.Service;
+using Identity.API.Core.Entities;
+using Identity.API.Core.Enum;
+using Identity.API.Core.Validators;
+using Identity.API.Service;
+using Moq;
 
 namespace Identity.API.Tests.Services
 {
@@ -76,7 +85,7 @@ namespace Identity.API.Tests.Services
                 It.IsAny<string>())).Returns((Admin)null!);
 
             // Act & Assert
-            var ex = Assert.Throws<StockApiException>(() =>
+            var ex = Assert.Throws<IdentityApiException>(() =>
                 _sut.Login("Username", "Password"));
 
             Assert.Equal(ErrorMessages.ADMINNOTFOUND, ex.Message);
@@ -101,7 +110,7 @@ namespace Identity.API.Tests.Services
                 It.IsAny<string>())).Returns(lockedAdmin);
 
             // Act & Assert
-            var ex = Assert.Throws<StockApiException>(() =>
+            var ex = Assert.Throws<IdentityApiException>(() =>
                 _sut.Login("Username", "Password"));
 
             var expectedErrorMessage = ErrorMessages.LOCKEDACCOUNT
@@ -174,7 +183,7 @@ namespace Identity.API.Tests.Services
             var expectedError = string.Join(", ", expectedErrors);
 
             // Act & Assert
-            var ex = Assert.Throws<StockApiException>(() =>
+            var ex = Assert.Throws<IdentityApiException>(() =>
                 _sut.Register(request));
 
             var expectedMessage = ErrorMessages.INVALIDREQUEST

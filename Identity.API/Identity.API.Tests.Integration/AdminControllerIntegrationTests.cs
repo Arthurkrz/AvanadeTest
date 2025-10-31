@@ -1,3 +1,20 @@
+using FluentValidation;
+using Identity.API.Architecture;
+using Identity.API.Web.Controllers;
+using Identity.API.Core.Common;
+using Identity.API.Core.Contracts.Repository;
+using Identity.API.Core.Contracts.Service;
+using Identity.API.Core.Entities;
+using Identity.API.Core.Validators;
+using Identity.API.IOC;
+using Identity.API.Tests.Integration.Utilities;
+using Identity.API.Web.DTOs;
+using Identity.API.Web.Validators;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
 namespace Identity.API.Tests.Integration
 {
     public class AdminControllerIntegrationTests

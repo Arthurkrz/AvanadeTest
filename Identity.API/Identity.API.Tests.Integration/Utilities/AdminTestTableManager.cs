@@ -1,4 +1,9 @@
-﻿using System.Security.Cryptography;
+﻿using Identity.API.Architecture;
+using Identity.API.Core.Contracts.Repository;
+using Identity.API.Core.Entities;
+using Konscious.Security.Cryptography;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Identity.API.Tests.Integration.Utilities

@@ -1,4 +1,5 @@
-﻿using Identity.API.Core.Common;
+﻿using FluentValidation;
+using Identity.API.Core.Common;
 
 namespace Identity.API.Core.Validators
 {

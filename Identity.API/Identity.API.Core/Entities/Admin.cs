@@ -1,6 +1,6 @@
 ﻿namespace Identity.API.Core.Entities
 {
-    public class Admin : User
+    public class Admin : Entity
     {
         private Admin() { }
 

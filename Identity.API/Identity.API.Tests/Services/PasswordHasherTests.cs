@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Identity.API.Core.Contracts.Service;
+using Identity.API.Service;
+using Konscious.Security.Cryptography;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Identity.API.Tests.Services
 {

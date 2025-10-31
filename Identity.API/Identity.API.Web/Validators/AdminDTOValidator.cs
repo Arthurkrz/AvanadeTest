@@ -1,4 +1,5 @@
-﻿using Identity.API.Web.DTOs;
+﻿using FluentValidation;
+using Identity.API.Web.DTOs;
 
 namespace Identity.API.Web.Validators
 {
