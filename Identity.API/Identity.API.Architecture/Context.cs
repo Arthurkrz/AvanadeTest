@@ -8,11 +8,14 @@ namespace Identity.API.Architecture
     {
         public DbSet<Admin> Admins { get; set; } = default!;
 
+        public DbSet<Buyer> Buyers { get; set; } = default!;
+
         public Context(DbContextOptions<Context> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfiguration(new AdminConfiguration());
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AdminConfiguration).Assembly);
         }
     }
 }
