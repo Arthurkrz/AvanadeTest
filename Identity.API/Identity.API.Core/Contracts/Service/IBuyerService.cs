@@ -3,12 +3,12 @@ using Identity.API.Core.Entities;
 
 namespace Identity.API.Core.Contracts.Service
 {
-    public interface IAdminService
+    public interface IBuyerService
     {
-        Admin Register(AdminRegisterRequest request);
+        Buyer Register(UserRegisterRequest request);
 
         bool Login(string username, string password);
 
-        Admin GetByUsername(string username);
+        Buyer GetByUsername(string username);
     }
 }

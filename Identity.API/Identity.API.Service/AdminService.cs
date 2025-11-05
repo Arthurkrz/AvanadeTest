@@ -9,12 +9,12 @@ namespace Identity.API.Service
 {
     public class AdminService : IAdminService
     {
-        private readonly IAdminRepository _adminRepository;
+        private readonly IBaseRepository<Admin> _adminRepository;
         private readonly IPasswordHasher _passwordHasher;
 
-        private readonly IValidator<RegisterRequest> _requestValidator;
+        private readonly IValidator<AdminRegisterRequest> _requestValidator;
 
-        public AdminService(IAdminRepository adminRepository, IPasswordHasher passwordHasher, IValidator<RegisterRequest> requestValidator)
+        public AdminService(IBaseRepository<Admin> adminRepository, IPasswordHasher passwordHasher, IValidator<AdminRegisterRequest> requestValidator)
         {
             _adminRepository = adminRepository;
             _passwordHasher = passwordHasher;
@@ -56,7 +56,7 @@ namespace Identity.API.Service
             return true;
         }
 
-        public Admin Register(RegisterRequest request)
+        public Admin Register(AdminRegisterRequest request)
         {
             var validationResult = _requestValidator.Validate(request);
 
@@ -73,5 +73,8 @@ namespace Identity.API.Service
             _adminRepository.Create(admin);
             return admin;
         }
+
+        public Admin GetByUsername(string username) =>
+            _adminRepository.GetByUsername(username);
     }
 }

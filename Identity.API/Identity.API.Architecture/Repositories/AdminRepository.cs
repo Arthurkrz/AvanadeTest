@@ -3,7 +3,7 @@ using Identity.API.Core.Entities;
 
 namespace Identity.API.Architecture.Repositories
 {
-    public class AdminRepository : IAdminRepository
+    public class AdminRepository : IBaseRepository<Admin>
     {
         private readonly Context _context;
 

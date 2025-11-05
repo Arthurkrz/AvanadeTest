@@ -4,6 +4,8 @@
     {
         public const string ADMINNOTFOUND = "Admin not found.";
 
+        public const string BUYERNOTFOUND = "User not found.";
+
         public const string LOCKEDACCOUNT = "Account locked until {lockoutEnd}.";
 
         public const string INVALIDCREDENTIALS = "Invalid username and/or password.";

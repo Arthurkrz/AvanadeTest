@@ -24,7 +24,7 @@ namespace Identity.API.Tests.Services
             _adminRepositoryMock = new Mock<IAdminRepository>();
             _passwordHasherMock = new Mock<IPasswordHasher>();
             _requestValidatorMock = new Mock<IValidator<RegisterRequest>>();
-            _requestValidator = new RegisterRequestValidator();
+            _requestValidator = new AdminRegisterRequestValidator();
 
             _sut = new AdminService(_adminRepositoryMock.Object,
                                     _passwordHasherMock.Object,

@@ -4,8 +4,9 @@
     {
         private Buyer() { }
 
-        public Buyer(string name, string cpf, string email, string phoneNumber, string deliveryAddress, byte[] passwordHash, byte[] passwordSalt, string hashAlgorithm, string hashParams)
+        public Buyer(string username, string name, string cpf, string email, string phoneNumber, string deliveryAddress, byte[] passwordHash, byte[] passwordSalt, string hashAlgorithm, string hashParams)
         {
+            Username = name;
             Name = name;
             CPF = cpf;
             Email = email;
@@ -16,6 +17,8 @@
             HashAlgorithm = hashAlgorithm;
             HashParams = hashParams;
         }
+
+        public string Username { get; set; } = default!;
 
         public string Name { get; set; } = default!;
 

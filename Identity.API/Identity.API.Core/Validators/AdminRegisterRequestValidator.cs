@@ -3,9 +3,9 @@ using Identity.API.Core.Common;
 
 namespace Identity.API.Core.Validators
 {
-    public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
+    public class AdminRegisterRequestValidator : AbstractValidator<AdminRegisterRequest>
     {
-        public RegisterRequestValidator()
+        public AdminRegisterRequestValidator()
         {
             this.RuleFor(p => p.Username)
                 .MinimumLength(3)

@@ -72,7 +72,7 @@ builder.Services.InjectRepositories(builder.Configuration);
 builder.Services.InjectServices();
 builder.Services.InjectValidators();
 builder.Services.AddValidatorsFromAssemblyContaining<AdminDTOValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<AdminRegisterRequestValidator>();
 
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();

@@ -39,7 +39,7 @@ namespace Identity.API.Tests.Integration
             ServiceCollection services = new();
 
             services.AddValidatorsFromAssemblyContaining<AdminDTOValidator>();
-            services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<AdminRegisterRequestValidator>();
 
             services.InjectRepositories(config);
             services.InjectServices();
