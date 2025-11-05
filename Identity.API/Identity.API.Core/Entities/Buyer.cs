@@ -6,7 +6,7 @@
 
         public Buyer(string username, string name, string cpf, string email, string phoneNumber, string deliveryAddress, byte[] passwordHash, byte[] passwordSalt, string hashAlgorithm, string hashParams)
         {
-            Username = name;
+            Username = username;
             Name = name;
             CPF = cpf;
             Email = email;

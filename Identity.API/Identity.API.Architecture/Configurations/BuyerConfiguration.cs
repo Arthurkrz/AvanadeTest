@@ -14,6 +14,10 @@ namespace Identity.API.Architecture.Configurations
                    .HasColumnType("uniqueidentifier")
                    .IsRequired();
 
+            builder.Property(x => x.Username)
+                   .HasMaxLength(100)
+                   .IsRequired();
+
             builder.Property(x => x.Name)
                    .HasMaxLength(100)
                    .IsRequired();
@@ -25,6 +29,9 @@ namespace Identity.API.Architecture.Configurations
             builder.Property(x => x.Email)
                    .HasMaxLength(80)
                    .IsRequired();
+
+            builder.HasIndex(x => x.Username)
+                   .IsUnique();
 
             builder.HasIndex(x => x.Name)
                    .IsUnique();

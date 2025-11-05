@@ -21,6 +21,7 @@ public class AdminController : Controller
         _adminDTOValidator = adminDTOValidator;
     }
 
+    [AllowAnonymous]
     [HttpPost("register")]
     public IActionResult Register(AdminDTO adminDTO)
     {
@@ -29,14 +30,15 @@ public class AdminController : Controller
         if (!validationResult.IsValid) return BadRequest(ErrorMessages.INVALIDREQUEST
             .Replace("{error}", string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage))));
 
-        var request = new RegisterRequest(adminDTO.Username!, adminDTO.Name!,
-                                          adminDTO.CPF!, adminDTO.Password!);
+        var request = new AdminRegisterRequest(adminDTO.Username!, adminDTO.Name!,
+                                               adminDTO.CPF!, adminDTO.Password!);
 
         var admin = _adminService.Register(request);
 
-        return Ok(new { admin.ID, admin.Username });
+        return Ok(new { admin.Username });
     }
 
+    [AllowAnonymous]
     [HttpPost("login")]
     public IActionResult Login([FromBody] LoginRequest loginRequest)
     {

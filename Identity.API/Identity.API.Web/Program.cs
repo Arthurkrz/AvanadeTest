@@ -6,7 +6,6 @@ using Identity.API.Web.DTOs;
 using Identity.API.Web.Validators;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,48 +24,15 @@ builder.Services
             ValidateIssuerSigningKey = true,
 
             ValidIssuer = jwtSettings["Issuer"],
-            ValidAudiences = new[]
-            {
-                jwtSettings["Audiences:SellsAPI"]
-            },
+            ValidAudience = jwtSettings["Audience"],
 
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
         };
     });
 
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new() { Title = "StockAPI", Version = "v1" });
-
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "Enter 'Bearer' [space] and then your token."
-    });
-
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-
-            new string[] { }
-        }
-    });
-});
-
 builder.Services.AddScoped<IValidator<AdminDTO>, AdminDTOValidator>();
+builder.Services.AddScoped<IValidator<BuyerDTO>, BuyerDTOValidator>();
 
 builder.Services.InjectRepositories(builder.Configuration);
 builder.Services.InjectServices();

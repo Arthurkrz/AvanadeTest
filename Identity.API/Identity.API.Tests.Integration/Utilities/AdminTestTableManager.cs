@@ -11,9 +11,9 @@ namespace Identity.API.Tests.Integration.Utilities
     public class AdminTestTableManager
     {
         private readonly Context _context;
-        private readonly IAdminRepository _adminRepository;
+        private readonly IBaseRepository<Admin> _adminRepository;
 
-        public AdminTestTableManager(Context context, IAdminRepository adminRepository)
+        public AdminTestTableManager(Context context, IBaseRepository<Admin> adminRepository)
         {
             _context = context;
             _adminRepository = adminRepository;

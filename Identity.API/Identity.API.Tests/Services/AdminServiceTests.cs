@@ -13,17 +13,17 @@ namespace Identity.API.Tests.Services
 {
     public class AdminServiceTests
     {
-        private readonly Mock<IAdminRepository> _adminRepositoryMock;
+        private readonly Mock<IBaseRepository<Admin>> _adminRepositoryMock;
         private readonly Mock<IPasswordHasher> _passwordHasherMock;
-        private readonly Mock<IValidator<RegisterRequest>> _requestValidatorMock;
-        private readonly IValidator<RegisterRequest> _requestValidator;
+        private readonly Mock<IValidator<AdminRegisterRequest>> _requestValidatorMock;
+        private readonly IValidator<AdminRegisterRequest> _requestValidator;
         private IAdminService _sut;
 
         public AdminServiceTests()
         {
-            _adminRepositoryMock = new Mock<IAdminRepository>();
+            _adminRepositoryMock = new Mock<IBaseRepository<Admin>>();
             _passwordHasherMock = new Mock<IPasswordHasher>();
-            _requestValidatorMock = new Mock<IValidator<RegisterRequest>>();
+            _requestValidatorMock = new Mock<IValidator<AdminRegisterRequest>>();
             _requestValidator = new AdminRegisterRequestValidator();
 
             _sut = new AdminService(_adminRepositoryMock.Object,
@@ -153,7 +153,7 @@ namespace Identity.API.Tests.Services
         {
             // Arrange
             _requestValidatorMock.Setup(x => x.Validate(
-                It.IsAny<RegisterRequest>())).Returns(
+                It.IsAny<AdminRegisterRequest>())).Returns(
                     new ValidationResult());
 
             _passwordHasherMock.Setup(x => x.HashPassword(
@@ -164,7 +164,7 @@ namespace Identity.API.Tests.Services
                 ));
 
             // Act
-            _sut.Register(new RegisterRequest("Username", "Name", "CPF", "Password"));
+            _sut.Register(new AdminRegisterRequest("Username", "Name", "CPF", "Password"));
 
             // Assert
             _adminRepositoryMock.Verify(x => x.Create(
@@ -173,7 +173,7 @@ namespace Identity.API.Tests.Services
 
         [Theory]
         [MemberData(nameof(GetInvalidRequests))]
-        public void Register_ShouldThrowExceptionWithErrors_WhenValidationFails(RegisterRequest request, IList<string> expectedErrors)
+        public void Register_ShouldThrowExceptionWithErrors_WhenValidationFails(AdminRegisterRequest request, IList<string> expectedErrors)
         {
             // Arrange
             _sut = new AdminService(_adminRepositoryMock.Object,
@@ -197,7 +197,7 @@ namespace Identity.API.Tests.Services
         {
             yield return new object[]
             {
-                new RegisterRequest("", "Name Surname", "12345678910", "987Pjhmk?"),
+                new AdminRegisterRequest("", "Name Surname", "12345678910", "987Pjhmk?"),
 
                 new List<string>
                 {
@@ -207,7 +207,7 @@ namespace Identity.API.Tests.Services
 
             yield return new object[]
             {
-                new RegisterRequest("Username", "Name", "12345678910", "987Pjhmk?"),
+                new AdminRegisterRequest("Username", "Name", "12345678910", "987Pjhmk?"),
 
                 new List<string>
                 {
@@ -217,7 +217,7 @@ namespace Identity.API.Tests.Services
 
             yield return new object[]
             {
-                new RegisterRequest("Username", "Name Surname", "1", "987Pjhmk?"),
+                new AdminRegisterRequest("Username", "Name Surname", "1", "987Pjhmk?"),
 
                 new List<string>
                 {
@@ -226,7 +226,7 @@ namespace Identity.API.Tests.Services
             };
             yield return new object[]
             {
-                new RegisterRequest("Username", "Name Surname", "123456789a0", "987Pjhmk?"),
+                new AdminRegisterRequest("Username", "Name Surname", "123456789a0", "987Pjhmk?"),
 
                 new List<string>
                 {
@@ -236,7 +236,7 @@ namespace Identity.API.Tests.Services
 
             yield return new object[]
             {
-                new RegisterRequest("Username", "Name Surname", "12345678910", "987Pjh?"),
+                new AdminRegisterRequest("Username", "Name Surname", "12345678910", "987Pjh?"),
 
                 new List<string>
                 {
@@ -246,7 +246,7 @@ namespace Identity.API.Tests.Services
 
             yield return new object[]
             {
-                new RegisterRequest("Username", "Name Surname", "12345678910", "987pjhmk?"),
+                new AdminRegisterRequest("Username", "Name Surname", "12345678910", "987pjhmk?"),
 
                 new List<string>
                 {
@@ -256,7 +256,7 @@ namespace Identity.API.Tests.Services
 
             yield return new object[]
             {
-                new RegisterRequest("Username", "Name Surname", "12345678910", "987Pjhmk"),
+                new AdminRegisterRequest("Username", "Name Surname", "12345678910", "987Pjhmk"),
 
                 new List<string>
                 {
@@ -266,7 +266,7 @@ namespace Identity.API.Tests.Services
 
             yield return new object[]
             {
-                new RegisterRequest("", "", "", ""),
+                new AdminRegisterRequest("", "", "", ""),
 
                 new List<string>
                 {

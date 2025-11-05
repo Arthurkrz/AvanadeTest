@@ -27,7 +27,7 @@ namespace Identity.API.Tests.Integration
         private readonly IValidator<AdminDTO> _adminDTOValidator;
 
         private readonly IAdminService _adminService;
-        private readonly IAdminRepository _adminRepository;
+        private readonly IBaseRepository<Admin> _adminRepository;
 
         public AdminControllerIntegrationTests()
         {
@@ -53,7 +53,7 @@ namespace Identity.API.Tests.Integration
             _context = _serviceProvider.GetRequiredService<Context>();
             _adminDTOValidator = _serviceProvider.GetRequiredService<IValidator<AdminDTO>>();
             _adminService = _serviceProvider.GetRequiredService<IAdminService>();
-            _adminRepository = _serviceProvider.GetRequiredService<IAdminRepository>();
+            _adminRepository = _serviceProvider.GetRequiredService<IBaseRepository<Admin>>();
 
             _adminTestTableManager = new AdminTestTableManager(_context, _adminRepository);
             _sut = new AdminController(_adminService, _adminDTOValidator);
@@ -82,7 +82,6 @@ namespace Identity.API.Tests.Integration
 
             var actual = new
             {
-                ID = (Guid)anon.GetType().GetProperty("ID")!.GetValue(anon)!,
                 Username = (string)anon.GetType().GetProperty("Username")!.GetValue(anon)!
             };
 
@@ -91,7 +90,6 @@ namespace Identity.API.Tests.Integration
             Admin? addedAdmin = _adminRepository.GetByUsername("NewAdmin");
 
             Assert.NotNull(addedAdmin);
-            Assert.Equal(addedAdmin.ID, actual.ID);
             Assert.Equal(addedAdmin.Username, actual.Username);
         }
 
