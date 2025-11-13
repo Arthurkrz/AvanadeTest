@@ -11,6 +11,7 @@ namespace Sales.API.Core.Common
         }
 
         public string Error { get; }
+
         public ErrorType ErrorType { get; }
     }
 }

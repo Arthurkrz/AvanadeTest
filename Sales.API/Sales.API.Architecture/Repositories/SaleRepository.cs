@@ -27,7 +27,7 @@ namespace Sales.API.Architecture.Repositories
         public IEnumerable<Sale> GetByProductId(Guid productId) =>
             _context.Sales.Where(s => s.ProductID == productId).OrderBy(s => s.ProductID);
 
-        public Sale GetById(int id) =>
+        public Sale GetById(Guid id) =>
             _context.Sales.Find(id)!;
     }
 }

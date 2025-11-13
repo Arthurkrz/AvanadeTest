@@ -4,7 +4,7 @@ namespace Sales.API.Core.Contracts.Service
 {
     public interface ISaleService
     {
-        Sale Sell(Sale sale);
+        Task<Sale> Sell(Sale sale);
 
         IEnumerable<Sale> GetAllSales();
 

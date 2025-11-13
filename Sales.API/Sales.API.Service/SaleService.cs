@@ -1,23 +1,33 @@
-﻿using Sales.API.Core.Common;
+﻿using Sales.API.Core.Contracts.Client;
 using Sales.API.Core.Contracts.Repository;
 using Sales.API.Core.Contracts.Service;
 using Sales.API.Core.Entities;
-using Sales.API.Core.Enum;
 
 namespace Sales.API.Service
 {
     public class SaleService : ISaleService
     {
+        private readonly IStockClient _stockClient;
+        private readonly IIdentityClient _identityClient;
         private readonly ISaleRepository _saleRepository;
 
-        public SaleService(ISaleRepository saleRepository)
+        public SaleService(IStockClient stockClient, IIdentityClient identityClient, ISaleRepository saleRepository)
         {
+            _stockClient = stockClient;
+            _identityClient = identityClient;
             _saleRepository = saleRepository;
         }
 
-        public Sale Sell(Sale sale)
+        public async Task<Sale> Sell(Sale sale)
         {
-            
+            if (await _stockClient.ProductExistsAsync(sale.ProductID) &&
+                await _identityClient.BuyerExistsAsync(sale.BuyerID))
+            {
+                // Message prod
+            }
+
+            _saleRepository.Add(sale);
+            return _saleRepository.GetById(sale.ID);
         }
 
         public IEnumerable<Sale> GetAllSales() => 
