@@ -32,7 +32,7 @@ namespace Identity.API.Tests.Services
         }
 
         [Fact]
-        public void Login_ShouldReturnTrue_WhenCredentialsAreValid()
+        public void Login_ShouldReturnTrue_WhenValidCredentials()
         {
             // Arrange
             var admin = new Admin

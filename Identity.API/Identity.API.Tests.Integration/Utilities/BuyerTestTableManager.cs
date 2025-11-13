@@ -8,31 +8,32 @@ using System.Text;
 
 namespace Identity.API.Tests.Integration.Utilities
 {
-    public class AdminTestTableManager
+    public class BuyerTestTableManager
     {
         private readonly Context _context;
-        private readonly IBaseRepository<Admin> _adminRepository;
+        private readonly IBaseRepository<Buyer> _buyerRepository;
 
-        public AdminTestTableManager(Context context, IBaseRepository<Admin> adminRepository)
+        public BuyerTestTableManager(Context context, IBaseRepository<Buyer> buyerRepository)
         {
             _context = context;
-            _adminRepository = adminRepository;
+            _buyerRepository = buyerRepository;
         }
 
         public void Cleanup() =>
-            _context.Database.ExecuteSqlRaw("TRUNCATE TABLE Administrators");
+            _context.Database.ExecuteSqlRaw("TRUNCATE TABLE Buyers");
 
-        public void InsertAdmin(int numberOfAdminsToInsert = 1)
+        public void InsertBuyer(int numberOfBuyersToInsert = 1)
         {
-            for (int adminNumber = 0; adminNumber < numberOfAdminsToInsert; adminNumber++)
+            for (int buyerNumber = 0; buyerNumber < numberOfBuyersToInsert; buyerNumber++)
             {
-                var (passwordHash, salt) = HashPassword($"Password{adminNumber}");
+                var (passwordHash, salt) = HashPassword($"Password{buyerNumber}");
 
-                var admin = new Admin($"Username{adminNumber}", $"Name{adminNumber}",
-                                      $"CPF{adminNumber}", passwordHash, salt,
+                var buyer = new Buyer($"Username{buyerNumber}", $"Name{buyerNumber}", $"CPF{buyerNumber}", 
+                                      $"Email{buyerNumber}", $"PhoneNumber{buyerNumber}", 
+                                      $"DeliveryAddress{buyerNumber}", passwordHash, salt,
                                       "Argon2id", "m=65536;i=3;p=1;len=32");
 
-                _adminRepository.Create(admin);
+                _buyerRepository.Create(buyer);
             }
         }
 
