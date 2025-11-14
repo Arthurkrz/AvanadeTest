@@ -1,5 +1,6 @@
 ﻿using Sales.API.Core.Contracts.Repository;
 using Sales.API.Core.Entities;
+using Sales.API.Core.Enum;
 
 namespace Sales.API.Architecture.Repositories
 {
@@ -15,19 +16,36 @@ namespace Sales.API.Architecture.Repositories
         public Sale Add(Sale sale)
         {
             _context.Add(sale);
+            _context.SaveChanges();
+
             return sale;
+        }
+
+        public Sale UpdateStatus(int saleCode, SaleStatus status)
+        {
+            var existingEntity = _context.Sales.FirstOrDefault(s => s.SaleCode == saleCode);
+
+            existingEntity!.Status = status;
+            _context.SaveChanges();
+
+            return existingEntity;
         }
 
         public IEnumerable<Sale> GetAll() =>
             _context.Set<Sale>().AsQueryable();
 
-        public IEnumerable<Sale> GetByBuyer(Guid buyerId) =>
-            _context.Sales.Where(s => s.BuyerID == buyerId).OrderBy(s => s.BuyerID);
+        public Sale GetById(Guid id) => _context.Sales.Find(id)!;
 
-        public IEnumerable<Sale> GetByProductId(Guid productId) =>
-            _context.Sales.Where(s => s.ProductID == productId).OrderBy(s => s.ProductID);
+        public Sale GetByCode(int saleCode) =>
+            _context.Sales.FirstOrDefault(s => s.SaleCode == saleCode)!;
 
-        public Sale GetById(Guid id) =>
-            _context.Sales.Find(id)!;
+        public IEnumerable<Sale> GetByBuyer(int buyerCPF) =>
+            _context.Sales.Where(s => s.BuyerCPF == buyerCPF).OrderBy(s => s.BuyerCPF);
+
+        public IEnumerable<Sale> GetByProductCode(int productCode) =>
+            _context.Sales.Where(s => s.ProductCode == productCode).OrderBy(s => s.ProductCode);
+
+        public bool IsSaleExistingByCode(int saleCode) =>
+            _context.Sales.Any(s => s.SaleCode == saleCode);
     }
 }

@@ -2,6 +2,6 @@
 {
     public interface IStockClient
     {
-        Task<bool> ProductExistsAsync(Guid productId);
+        Task<bool> ProductExistsAsync(int productCode);
     }
 }

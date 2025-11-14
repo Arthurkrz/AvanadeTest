@@ -4,20 +4,21 @@ namespace Sales.API.Core.Entities
 {
     public class Sale
     {
-        public Sale(Guid id, Guid buyerId, Guid productId, int sellAmount, SaleStatus status)
+        public Sale(int buyerCPF, int productCode, int sellAmount, SaleStatus status)
         {
-            ID = id;
-            BuyerID = buyerId;
-            ProductID = productId;
+            BuyerCPF = buyerCPF;
+            ProductCode = productCode;
             SellAmount = sellAmount;
             Status = status;
         }
 
-        public Guid ID { get; set; }
+        public Guid ID { get; } = Guid.NewGuid();
 
-        public Guid BuyerID { get; set; }
+        public int SaleCode { get; set; }
 
-        public Guid ProductID { get; set; }
+        public int BuyerCPF { get; set; }
+
+        public int ProductCode { get; set; }
 
         public int SellAmount { get; set; }
 

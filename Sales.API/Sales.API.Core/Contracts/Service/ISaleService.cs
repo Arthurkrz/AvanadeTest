@@ -1,4 +1,5 @@
 ﻿using Sales.API.Core.Entities;
+using Sales.API.Core.Enum;
 
 namespace Sales.API.Core.Contracts.Service
 {
@@ -6,12 +7,14 @@ namespace Sales.API.Core.Contracts.Service
     {
         Task<Sale> Sell(Sale sale);
 
+        Sale UpdateSaleStatus(int saleCode, SaleStatus status);
+
+        Sale GetSaleByCode(int saleCode);
+
         IEnumerable<Sale> GetAllSales();
 
-        IEnumerable<Sale> GetSalesByBuyerId(Guid buyerId);
+        IEnumerable<Sale> GetSalesByBuyerCPF(int buyerCPF);
 
-        IEnumerable<Sale> GetSalesByProductId(Guid productId);
-
-        Sale GetSaleById(Guid id);
+        IEnumerable<Sale> GetSalesByProductCode(int productCode);
     }
 }

@@ -18,19 +18,17 @@ namespace Sales.API.Web.Controllers
 
         public IActionResult ProcessSale(SaleDTO saleDTO)
         {
-            if (saleDTO.ID == Guid.Empty || saleDTO.BuyerID == Guid.Empty ||
-                saleDTO.ProductID == Guid.Empty || saleDTO.SellAmount <= 0)
+            if (saleDTO.BuyerCPF <= 0 || saleDTO.ProductCode <= 0 || saleDTO.SellAmount <= 0)
                     return BadRequest(ErrorMessages.INCORRECTFORMAT);
 
-            var sale = new Sale(saleDTO.ID, saleDTO.BuyerID, saleDTO.ProductID,
+            var sale = new Sale(saleDTO.BuyerCPF, saleDTO.ProductCode,
                                 saleDTO.SellAmount, SaleStatus.Pending);
 
             var createdSale = _saleService.Sell(sale);
 
             return Ok(new
             {
-                createdSale.Result.ID,
-                createdSale.Result.ProductID,
+                createdSale.Result.ProductCode,
                 createdSale.Result.SellAmount,
                 Status = createdSale.Result.Status.ToString()
             });
@@ -45,27 +43,27 @@ namespace Sales.API.Web.Controllers
             return Ok(sales);
         }
 
-        public IActionResult GetSalesByBuyerId(Guid buyerId)
+        public IActionResult GetSalesByBuyerId(int buyerCPF)
         {
-            var sales = _saleService.GetSalesByBuyerId(buyerId);
+            var sales = _saleService.GetSalesByBuyerCPF(buyerCPF);
 
             if (!sales.Any()) return NotFound(ErrorMessages.NOSALESFOUND);
 
             return Ok(sales);
         }
 
-        public IActionResult GetSalesByProductId(Guid productId)
+        public IActionResult GetSalesByProductId(int productCode)
         {
-            var sales = _saleService.GetSalesByProductId(productId);
+            var sales = _saleService.GetSalesByProductCode(productCode);
 
             if (!sales.Any()) return NotFound(ErrorMessages.NOSALESFOUND);
 
             return Ok(sales);
         }
 
-        public IActionResult GetById(Guid ID)
+        public IActionResult GetByCode(int saleCode)
         {
-            var sale = _saleService.GetSaleById(ID);
+            var sale = _saleService.GetSaleByCode(saleCode);
 
             if (sale is null) return NotFound(ErrorMessages.SALENOTFOUND);
 

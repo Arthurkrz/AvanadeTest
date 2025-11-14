@@ -13,9 +13,9 @@ namespace Sales.API.Service.Clients
             _httpClient.BaseAddress = new Uri(config["ServiceUrls:StockAPI"]!);
         }
 
-        public async Task<bool> ProductExistsAsync(Guid productId)
+        public async Task<bool> ProductExistsAsync(int productCode)
         {
-            var response = await _httpClient.GetAsync($"/api/products/exists/{productId}");
+            var response = await _httpClient.GetAsync($"/api/products/exists/{productCode}");
             if (!response.IsSuccessStatusCode) return false;
 
             var content = await response.Content.ReadAsStringAsync();

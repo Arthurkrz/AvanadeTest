@@ -13,11 +13,11 @@ namespace Sales.API.Service.Clients
             _httpClient.BaseAddress = new Uri(config["ServiceUrls:IdentityAPI"]!);
         }
 
-        public async Task<bool> BuyerExistsAsync(Guid buyerId)
+        public async Task<bool> BuyerExistsAsync(int buyerCPF)
         {
-            var response = await _httpClient.GetAsync($"/api/buyers/exists/{buyerId}");
+            var response = await _httpClient.GetAsync($"/api/buyers/exists/{buyerCPF}");
             if (!response.IsSuccessStatusCode) return false;
-
+            
             var content = await response.Content.ReadAsStringAsync();
             return bool.TryParse(content, out var exists) && exists;
         }

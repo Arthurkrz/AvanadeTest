@@ -12,7 +12,8 @@ namespace Sales.API.Architecture
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfiguration(new SaleConfiguration());
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(SaleConfiguration).Assembly);
         }
     }
 }

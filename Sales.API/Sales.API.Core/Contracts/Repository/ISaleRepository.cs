@@ -1,4 +1,5 @@
 ﻿using Sales.API.Core.Entities;
+using Sales.API.Core.Enum;
 
 namespace Sales.API.Core.Contracts.Repository
 {
@@ -6,12 +7,18 @@ namespace Sales.API.Core.Contracts.Repository
     {
         Sale Add(Sale sale);
 
-        IEnumerable<Sale> GetAll();
-
-        IEnumerable<Sale> GetByBuyer(Guid buyerId);
-
-        IEnumerable<Sale> GetByProductId(Guid productId);
+        Sale UpdateStatus(int saleCode, SaleStatus status);
 
         Sale GetById(Guid id);
+
+        Sale GetByCode(int saleCode);
+
+        IEnumerable<Sale> GetAll();
+
+        IEnumerable<Sale> GetByBuyer(int buyerCPF);
+
+        IEnumerable<Sale> GetByProductCode(int productCode);
+
+        bool IsSaleExistingByCode(int saleCode);
     }
 }

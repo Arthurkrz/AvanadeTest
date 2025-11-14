@@ -10,10 +10,10 @@ namespace Sales.API.Architecture.Configurations
         {
             builder.HasKey(s => s.ID);
             
-            builder.Property(s => s.BuyerID)
+            builder.Property(s => s.BuyerCPF)
                    .IsRequired();
             
-            builder.Property(s => s.ProductID)
+            builder.Property(s => s.ProductCode)
                    .IsRequired();
             
             builder.Property(s => s.SellAmount)
@@ -25,10 +25,7 @@ namespace Sales.API.Architecture.Configurations
             builder.HasIndex(s => s.ID)
                    .IsUnique();
 
-            builder.HasIndex(s => s.BuyerID)
-                   .IsUnique();
-
-            builder.HasIndex(s => s.ProductID)
+            builder.HasIndex(s => s.SaleCode)
                    .IsUnique();
 
             builder.ToTable("Sales");

@@ -2,6 +2,6 @@
 {
     public interface IIdentityClient
     {
-        Task<bool> BuyerExistsAsync(Guid buyerId);
+        Task<bool> BuyerExistsAsync(int buyerCPF);
     }
 }
