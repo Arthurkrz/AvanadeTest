@@ -1,6 +1,5 @@
 using FluentValidation;
 using FluentValidation.Results;
-using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Stock.API.Core.Common;
 using Stock.API.Core.Contracts.Repository;
@@ -70,15 +69,15 @@ namespace Stock.API.Tests.Services
             var product = new Product("Name", "Description", 10, 10);
 
             _productRepositoryMock.Setup(
-                r => r.GetById(It.IsAny<Guid>()))
+                r => r.GetByCode(It.IsAny<int>()))
                 .Returns(product);
 
             // Act
-            _sut.UpdateStock(new Guid(), 1);
+            _sut.UpdateStock(1, 1);
 
             // Assert
             _productRepositoryMock.Verify(r => r.UpdateStock(
-                It.IsAny<Guid>(), It.IsAny<int>()), Times.Once);
+                It.IsAny<int>(), It.IsAny<int>()), Times.Once);
         }
 
         [Fact]
@@ -86,12 +85,12 @@ namespace Stock.API.Tests.Services
         {
             // Arrange
             _productRepositoryMock.Setup(
-                r => r.GetById(It.IsAny<Guid>()))
+                r => r.GetByCode(It.IsAny<int>()))
                 .Returns((Product)null!);
 
             // Act & Assert
             var ex = Assert.Throws<StockApiException>(() =>
-                _sut.UpdateStock(new Guid(), 1));
+                _sut.UpdateStock(1, 1));
         }
 
         [Fact]
@@ -105,15 +104,15 @@ namespace Stock.API.Tests.Services
                 .Returns(new ValidationResult());
 
             _productRepositoryMock.Setup(
-                r => r.GetById(It.IsAny<Guid>()))
+                r => r.GetByCode(It.IsAny<int>()))
                 .Returns(product);
 
             // Act
-            _sut.UpdateProduct(new Guid(), new Product("Name", "Description", 10, 10));
+            _sut.UpdateProduct(1, product);
 
             // Assert
             _productRepositoryMock.Verify(r => r.UpdateProduct(
-                It.IsAny<Guid>(), It.IsAny<Product>()), Times.Once);
+                1, It.IsAny<Product>()), Times.Once);
         }
 
         [Theory]
@@ -124,14 +123,14 @@ namespace Stock.API.Tests.Services
             _sut = new ProductService(_productRepositoryMock.Object, _productValidator);
 
             _productRepositoryMock.Setup(
-                r => r.GetById(It.IsAny<Guid>()))
+                r => r.GetByCode(It.IsAny<int>()))
                 .Returns(product);
 
             var expectedError = string.Join(", ", expectedErrors);
 
             // Act & Assert
             var ex = Assert.Throws<StockApiException>(() =>
-                _sut.UpdateProduct(Guid.NewGuid(), product));
+                _sut.UpdateProduct(1, product));
 
             var expectedMessage = ErrorMessages.INVALIDREQUEST
                 .Replace("{error}", expectedError);
@@ -145,12 +144,12 @@ namespace Stock.API.Tests.Services
         {
             // Arrange
             _productRepositoryMock.Setup(
-                r => r.GetById(It.IsAny<Guid>()))
+                r => r.GetByCode(It.IsAny<int>()))
                 .Returns((Product)null!);
 
             // Act & Assert
             var ex = Assert.Throws<StockApiException>(() =>
-                _sut.UpdateProduct(new Guid(), new Product("Name", "Description", 10, 10)));
+                _sut.UpdateProduct(1, new Product("Name", "Description", 10, 10)));
         }
 
         [Fact]
@@ -160,15 +159,15 @@ namespace Stock.API.Tests.Services
             var product = new Product("Name", "Description", 10, 10);
 
             _productRepositoryMock.Setup(
-                r => r.GetById(It.IsAny<Guid>()))
+                r => r.GetByCode(It.IsAny<int>()))
                 .Returns(product);
 
             // Act
-            _sut.DeleteProduct(new Guid());
+            _sut.DeleteProduct(1);
 
             // Assert
             _productRepositoryMock.Verify(r => r.Delete(
-                It.IsAny<Guid>()), Times.Once);
+                It.IsAny<int>()), Times.Once);
         }
 
         [Fact]
@@ -176,12 +175,12 @@ namespace Stock.API.Tests.Services
         {
             // Arrange
             _productRepositoryMock.Setup(
-                r => r.GetById(It.IsAny<Guid>()))
+                r => r.GetByCode(It.IsAny<int>()))
                 .Returns((Product)null!);
 
             // Act & Assert
             var ex = Assert.Throws<StockApiException>(() =>
-                _sut.DeleteProduct(new Guid()));
+                _sut.DeleteProduct(1));
         }
 
         [Fact]

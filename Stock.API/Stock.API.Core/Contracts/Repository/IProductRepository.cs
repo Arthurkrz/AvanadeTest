@@ -6,14 +6,16 @@ namespace Stock.API.Core.Contracts.Repository
     {
         Product Create(Product product);
 
-        Product UpdateStock(Guid productId, int newAmountInStock);
+        Product UpdateStock(int productCode, int newAmountInStock);
 
-        Product UpdateProduct(Guid productId, Product product);
+        Product UpdateProduct(int productCode, Product product);
 
-        Product Delete(Guid id);
-
-        IEnumerable<Product> GetAll();
+        Product Delete(int productCode);
 
         Product GetById(Guid productId);
+
+        Product GetByCode(int productCode);
+
+        IEnumerable<Product> GetAll();
     }
 }

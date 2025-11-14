@@ -26,6 +26,8 @@ namespace Stock.API.Tests.Integration.Utilities
                 var product = new Product($"Name{productNumber}", 
                                           $"Description{productNumber}", 10, 10);
 
+                product.Code = productNumber + 1;
+
                 _productRepository.Create(product);
             }
         }

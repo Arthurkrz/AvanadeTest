@@ -133,10 +133,10 @@ namespace Stock.API.Tests.Integration
                 AmountInStock = 15
             };
 
-            var productId = _productRepository.GetAll().First().ID;
+            var product = _productRepository.GetAll().First();
 
             // Act
-            var result = _sut.Update(productId, productDTO);
+            var result = _sut.Update(product.Code, productDTO);
 
             // Assert
             var ok = Assert.IsType<OkObjectResult>(result);
@@ -147,7 +147,7 @@ namespace Stock.API.Tests.Integration
             Assert.Equal(20.5M, actual.Price);
             Assert.Equal(15, actual.AmountInStock);
 
-            var updatedProduct = _productRepository.GetById(productId);
+            var updatedProduct = _productRepository.GetById(product.ID);
             Assert.Equal("UpdatedProductName", updatedProduct.Name);
             Assert.Equal("UpdatedProductDescription", updatedProduct.Description);
             Assert.Equal(20.5M, updatedProduct.Price);
@@ -162,7 +162,7 @@ namespace Stock.API.Tests.Integration
             _productTestTableManager.Cleanup();
 
             // Act
-            var result = _sut.Update(Guid.NewGuid(), productDTO);
+            var result = _sut.Update(1, productDTO);
 
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
@@ -174,8 +174,10 @@ namespace Stock.API.Tests.Integration
             actualAnonymous.Should().BeEquivalentTo(expectedAnonymous);
         }
 
-        [Fact]
-        public void Update_ShouldReturnBadRequest_WhenInvalidId()
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public void Update_ShouldReturnBadRequest_WhenInvalidProductCode(int invalidCode)
         {
             // Arrange
             _productTestTableManager.Cleanup();
@@ -189,7 +191,7 @@ namespace Stock.API.Tests.Integration
             };
 
             // Act
-            var result = _sut.Update(Guid.Empty, productDTO);
+            var result = _sut.Update(invalidCode, productDTO);
 
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
@@ -202,13 +204,13 @@ namespace Stock.API.Tests.Integration
             // Arrange
             _productTestTableManager.Cleanup();
             _productTestTableManager.InsertProduct();
-            var productId = _productRepository.GetAll().First().ID;
+            var product = _productRepository.GetAll().First();
 
             // Act
-            var result = _sut.Delete(productId);
+            var result = _sut.Delete(product.Code);
 
             // Assert
-            Assert.Null(_productRepository.GetById(productId));
+            Assert.Null(_productRepository.GetById(product.ID));
             var ok = Assert.IsType<OkObjectResult>(result);
             var anon = ok.Value!;
 
@@ -218,18 +220,20 @@ namespace Stock.API.Tests.Integration
                 Name = (string)anon.GetType().GetProperty("Name")!.GetValue(anon)!
             };
 
-            Assert.Equal(productId, actual.ID);
+            Assert.Equal(product.ID, actual.ID);
             Assert.Equal("Name0", actual.Name);
         }
 
-        [Fact]
-        public void Delete_ShouldReturnBadRequest_WhenInvalidId()
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public void Delete_ShouldReturnBadRequest_WhenInvalidId(int productCode)
         {
             // Arrange
             _productTestTableManager.Cleanup();
 
             // Act
-            var result = _sut.Delete(Guid.Empty);
+            var result = _sut.Delete(productCode);
 
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
@@ -242,11 +246,11 @@ namespace Stock.API.Tests.Integration
             // Arrange
             var expectedProducts = new List<Product>
             {
-                new Product("Name0", "Description0", 10, 10),
+                new Product("Name0", "Description0", 10, 10) { Code = 1 },
 
-                new Product("Name1", "Description1", 10, 10),
+                new Product("Name1", "Description1", 10, 10) { Code = 2 },
 
-                new Product("Name2", "Description2", 10, 10)
+                new Product("Name2", "Description2", 10, 10) { Code = 3 }
             };
 
             _productTestTableManager.Cleanup();

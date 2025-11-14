@@ -41,9 +41,9 @@ public class ProductController : ControllerBase
 
     [Authorize(Roles = "Admin")]
     [HttpPut("update/{id:guid}")]
-    public IActionResult Update(Guid id, [FromBody] ProductDTO productDTO)
+    public IActionResult Update(int productCode, [FromBody] ProductDTO productDTO)
     {
-        if (id == Guid.Empty) return BadRequest(ErrorMessages.INCORRECTFORMAT);
+        if (productCode <= 0) return BadRequest(ErrorMessages.INCORRECTFORMAT);
 
         var validationResult = _productDTOValidator.Validate(productDTO);
 
@@ -56,18 +56,18 @@ public class ProductController : ControllerBase
             (int)productDTO.AmountInStock!
         );
 
-        var updatedProduct = _productService.UpdateProduct(id, product);
+        var updatedProduct = _productService.UpdateProduct(productCode, product);
 
         return Ok(updatedProduct);
     }
 
     [Authorize(Roles = "Admin")]
     [HttpDelete("{id:guid}")]
-    public IActionResult Delete(Guid id)
+    public IActionResult Delete(int productCode)
     {
-        if (id == Guid.Empty) return BadRequest(ErrorMessages.INCORRECTFORMAT);
+        if (productCode <= 0) return BadRequest(ErrorMessages.INCORRECTFORMAT);
 
-        var deletedProduct = _productService.DeleteProduct(id);
+        var deletedProduct = _productService.DeleteProduct(productCode);
 
         return Ok(new { deletedProduct.ID, deletedProduct.Name });
     }
@@ -81,5 +81,17 @@ public class ProductController : ControllerBase
         if (!products.Any()) return BadRequest(ErrorMessages.NOPRODUCTSFOUND);
 
         return Ok(products);
+    }
+
+    [Authorize(Roles = "Admin,SalesAPI")]
+    public IActionResult GetByCode(int productCode)
+    {
+        if (productCode <= 0) return BadRequest(ErrorMessages.INCORRECTFORMAT);
+
+        var product = _productService.GetByCode(productCode);
+
+        if (product is null) return NotFound(ErrorMessages.PRODUCTNOTFOUND);
+
+        return Ok(product);
     }
 }

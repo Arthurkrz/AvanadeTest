@@ -11,6 +11,7 @@ namespace Stock.API.Service
     {
         private readonly IProductRepository _productRepository;
         private readonly IValidator<Product> _productValidator;
+        private readonly Random _random = new();
 
         public ProductService(IProductRepository productRepository, IValidator<Product> productValidator)
         {
@@ -26,43 +27,49 @@ namespace Stock.API.Service
                 .Replace("{error}", string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage))),
                 ErrorType.BusinessRuleViolation);
 
+            do product.Code = _random.Next(1, 10000);
+            while (_productRepository.GetByCode(product.Code) is not null);
+
             return _productRepository.Create(product);
         }
 
-        public Product UpdateStock(Guid productId, int sellAmount)
+        public Product UpdateStock(int productCode, int sellAmount)
         {
-            var product = _productRepository.GetById(productId);
+            var product = _productRepository.GetByCode(productCode);
 
             if (product is null) throw new StockApiException(ErrorMessages.PRODUCTNOTFOUND, ErrorType.NotFound);
 
             int newAmountInStock = product.AmountInStock - sellAmount;
 
-            return _productRepository.UpdateStock(productId, newAmountInStock);
+            return _productRepository.UpdateStock(productCode, newAmountInStock);
         }
 
-        public Product UpdateProduct(Guid productId, Product product)
+        public Product UpdateProduct(int productCode, Product product)
         {
             var validationResult = _productValidator.Validate(product);
 
-            if (_productRepository.GetById(productId) is null)
+            if (_productRepository.GetByCode(productCode) is null)
                 throw new StockApiException(ErrorMessages.PRODUCTNOTFOUND, ErrorType.NotFound);
 
             if (!validationResult.IsValid) throw new StockApiException(ErrorMessages.INVALIDREQUEST
                 .Replace("{error}", string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage))), 
                 ErrorType.BusinessRuleViolation);
 
-            return _productRepository.UpdateProduct(productId, product);
+            return _productRepository.UpdateProduct(productCode, product);
         }
 
-        public Product DeleteProduct(Guid productId)
+        public Product DeleteProduct(int productCode)
         {
-            if (_productRepository.GetById(productId) is null)
+            if (_productRepository.GetByCode(productCode) is null)
                 throw new StockApiException(ErrorMessages.PRODUCTNOTFOUND, ErrorType.NotFound);
 
-            var deletedProduct = _productRepository.Delete(productId);
+            var deletedProduct = _productRepository.Delete(productCode);
 
             return deletedProduct;
         }
+
+        public Product GetByCode(int ProductCode) =>
+            _productRepository.GetByCode(ProductCode);
 
         public IEnumerable<Product> GetAll() => 
             _productRepository.GetAll();

@@ -17,7 +17,7 @@ namespace Stock.API.Service.MessageConsumerServices.Handlers
         public async Task HandleAsync(string messageJson)
         {
             var message = JsonSerializer.Deserialize<ProductSaleDTO>(messageJson);
-            _productService.UpdateStock(message!.ProductID, message.SoldAmount);
+            _productService.UpdateStock(message!.ProductCode, message.SoldAmount);
         }
     }
 }

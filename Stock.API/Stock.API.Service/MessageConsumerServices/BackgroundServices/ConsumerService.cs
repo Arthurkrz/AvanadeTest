@@ -76,7 +76,7 @@ namespace Stock.API.Service.MessageConsumerServices.BackgroundServices
                 var json = Encoding.UTF8.GetString(ea.Body.ToArray());
                 var message = JsonSerializer.Deserialize<ProductSaleDTO>(json);
 
-                if (message is null || message.ProductID == Guid.Empty || message.SoldAmount <= 0)
+                if (message is null || message.ProductCode <= 0 || message.SoldAmount <= 0)
                 {
                     _logger.LogWarning("Received null or invalid message.");
                     await _channel!.BasicNackAsync(ea.DeliveryTag, false, requeue: false);
@@ -90,7 +90,7 @@ namespace Stock.API.Service.MessageConsumerServices.BackgroundServices
                     await handler.HandleAsync(json);
 
                     await _channel!.BasicAckAsync(ea.DeliveryTag, false);
-                    _logger.LogInformation($"Processed sale for product {message.ProductID}");
+                    _logger.LogInformation($"Processed sale for product {message.ProductCode}");
                 }
                 else
                 {

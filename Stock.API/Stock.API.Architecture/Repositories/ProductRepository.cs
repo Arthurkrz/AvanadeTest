@@ -19,25 +19,21 @@ namespace Stock.API.Architecture.Repositories
             return product;
         }
 
-        public Product Delete(Guid id)
+        public Product UpdateStock(int productCode, int newAmountInStock)
         {
-            var product = GetById(id);
+            var existingEntity = _context.Products.FirstOrDefault(p => p.Code == productCode);
 
-            _context.Remove(product!);
+            _context.Entry(existingEntity!).CurrentValues
+                            .SetValues(new { AmountInStock = newAmountInStock });
+
             _context.SaveChanges();
-
-            return product!;
+            existingEntity!.AmountInStock = newAmountInStock;
+            return existingEntity;
         }
 
-        public IEnumerable<Product> GetAll() =>
-            _context.Set<Product>().AsQueryable();
-
-        public Product GetById(Guid productId) => 
-            _context.Products.Find(productId)!;
-
-        public Product UpdateProduct(Guid productId, Product product)
+        public Product UpdateProduct(int productCode, Product product)
         {
-            var existingEntity = _context.Set<Product>().Find(productId)!;
+            var existingEntity = _context.Products.FirstOrDefault(p => p.Code == productCode)!;
 
             existingEntity.Name = product.Name;
             existingEntity.Description = product.Description;
@@ -48,16 +44,23 @@ namespace Stock.API.Architecture.Repositories
             return product;
         }
 
-        public Product UpdateStock(Guid productId, int newAmountInStock)
+        public Product Delete(int productCode)
         {
-            var existingEntity = _context.Products.Find(productId);
+            var product = GetByCode(productCode);
 
-            _context.Entry(existingEntity!).CurrentValues
-                            .SetValues(new { AmountInStock = newAmountInStock });
-
+            _context.Remove(product!);
             _context.SaveChanges();
-            existingEntity!.AmountInStock = newAmountInStock;
-            return existingEntity;
+
+            return product!;
         }
+
+        public Product GetById(Guid productId) =>
+            _context.Products.Find(productId)!;
+
+        public Product GetByCode(int productCode) =>
+            _context.Products.FirstOrDefault(p => p.Code == productCode)!;
+
+        public IEnumerable<Product> GetAll() =>
+            _context.Set<Product>().AsQueryable();
     }
 }

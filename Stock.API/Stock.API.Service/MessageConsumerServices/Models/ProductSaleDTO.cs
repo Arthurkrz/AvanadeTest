@@ -2,9 +2,7 @@
 {
     public class ProductSaleDTO
     {
-        public Guid ID { get; set; } = Guid.NewGuid();
-
-        public Guid ProductID { get; set; }
+        public int ProductCode { get; set; }
 
         public int SoldAmount { get; set; }
 
