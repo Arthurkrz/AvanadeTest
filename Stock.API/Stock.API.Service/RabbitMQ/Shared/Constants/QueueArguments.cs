@@ -1,4 +1,4 @@
-﻿namespace Stock.API.Service.MessageConsumerServices.Constants
+﻿namespace Stock.API.Service.RabbitMQ.Shared.Constants
 {
     public class QueueArguments
     {

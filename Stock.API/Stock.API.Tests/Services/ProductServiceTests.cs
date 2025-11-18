@@ -2,6 +2,7 @@ using FluentValidation;
 using FluentValidation.Results;
 using Moq;
 using Stock.API.Core.Common;
+using Stock.API.Core.Contracts.RabbitMQ;
 using Stock.API.Core.Contracts.Repository;
 using Stock.API.Core.Contracts.Service;
 using Stock.API.Core.Entities;
@@ -14,6 +15,7 @@ namespace Stock.API.Tests.Services
     public class ProductServiceTests
     {
         private readonly Mock<IProductRepository> _productRepositoryMock;
+        private readonly Mock<IProducerService> _producerServiceMock;
         private readonly Mock<IValidator<Product>> _productValidatorMock;
         private readonly IValidator<Product> _productValidator;
         private IProductService _sut;
@@ -21,10 +23,13 @@ namespace Stock.API.Tests.Services
         public ProductServiceTests()
         {
             _productRepositoryMock = new Mock<IProductRepository>();
+            _producerServiceMock = new Mock<IProducerService>();
             _productValidatorMock = new Mock<IValidator<Product>>();
             _productValidator = new ProductValidator();
 
-            _sut = new ProductService(_productRepositoryMock.Object, _productValidatorMock.Object);
+            _sut = new ProductService(_productRepositoryMock.Object, 
+                                      _productValidatorMock.Object, 
+                                      _producerServiceMock.Object);
         }
 
         [Fact]
@@ -47,7 +52,7 @@ namespace Stock.API.Tests.Services
         public void Create_ShouldThrowExceptionWithErrors_WhenValidationFails(Product product, IList<string> expectedErrors)
         {
             // Arrange
-            _sut = new ProductService(_productRepositoryMock.Object, _productValidator);
+            _sut = new ProductService(_productRepositoryMock.Object, _productValidator, _producerServiceMock.Object);
 
             var expectedError = string.Join(", ", expectedErrors);
 
@@ -63,7 +68,7 @@ namespace Stock.API.Tests.Services
         }
 
         [Fact]
-        public void UpdateStock_ShouldInvokeRepositoryUpdateStockMethod()
+        public void UpdateStock_ShouldInvokeRepositoryUpdateStockAndMessagePublisherMethod()
         {
             // Arrange
             var product = new Product("Name", "Description", 10, 10);
@@ -73,24 +78,38 @@ namespace Stock.API.Tests.Services
                 .Returns(product);
 
             // Act
-            _sut.UpdateStock(1, 1);
+            _sut.UpdateStock(1, 1, 1);
 
             // Assert
             _productRepositoryMock.Verify(r => r.UpdateStock(
                 It.IsAny<int>(), It.IsAny<int>()), Times.Once);
+
+            _producerServiceMock.Verify(p => p.PublishSaleProcessed(
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<IList<string>>()), Times.Once);
         }
 
         [Fact]
-        public void UpdateStock_ShouldThrowException_WhenProductNotFound()
+        public void UpdateStock_ShouldInvokePublishMethodWithErrors_WhenProductNotFound()
         {
             // Arrange
             _productRepositoryMock.Setup(
                 r => r.GetByCode(It.IsAny<int>()))
                 .Returns((Product)null!);
 
-            // Act & Assert
-            var ex = Assert.Throws<StockApiException>(() =>
-                _sut.UpdateStock(1, 1));
+            var errorMessageList = new List<string> 
+            { ErrorMessages.PRODUCTNOTFOUND };
+
+            // Act
+            _sut.UpdateStock(1, 1, 1);
+
+            // Assert
+            _productRepositoryMock.Verify(
+                r => r.GetByCode(It.IsAny<int>()), 
+                Times.Once);
+
+            _producerServiceMock.Verify(
+                p => p.PublishSaleProcessed(It.IsAny<int>(), 
+                It.IsAny<int>(), errorMessageList), Times.Once);
         }
 
         [Fact]
@@ -120,7 +139,7 @@ namespace Stock.API.Tests.Services
         public void UpdateProduct_ShouldThrowExceptionWithErrors_WhenValidationFails(Product product, IList<string> expectedErrors)
         {
             // Arrange
-            _sut = new ProductService(_productRepositoryMock.Object, _productValidator);
+            _sut = new ProductService(_productRepositoryMock.Object, _productValidator, _producerServiceMock.Object);
 
             _productRepositoryMock.Setup(
                 r => r.GetByCode(It.IsAny<int>()))

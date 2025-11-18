@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Stock.API.Core.Common;
+using Stock.API.Core.Contracts.RabbitMQ;
 using Stock.API.Core.Contracts.Repository;
 using Stock.API.Core.Contracts.Service;
 using Stock.API.Core.Entities;
@@ -11,12 +12,14 @@ namespace Stock.API.Service
     {
         private readonly IProductRepository _productRepository;
         private readonly IValidator<Product> _productValidator;
+        private readonly IProducerService _producerService;
         private readonly Random _random = new();
 
-        public ProductService(IProductRepository productRepository, IValidator<Product> productValidator)
+        public ProductService(IProductRepository productRepository, IValidator<Product> productValidator, IProducerService producerService)
         {
             _productRepository = productRepository;
             _productValidator = productValidator;
+            _producerService = producerService;
         }
 
         public Product Create(Product product)
@@ -33,15 +36,25 @@ namespace Stock.API.Service
             return _productRepository.Create(product);
         }
 
-        public Product UpdateStock(int productCode, int sellAmount)
+        public void UpdateStock(int saleCode, int productCode, int sellAmount)
         {
             var product = _productRepository.GetByCode(productCode);
 
-            if (product is null) throw new StockApiException(ErrorMessages.PRODUCTNOTFOUND, ErrorType.NotFound);
+            if (product is null) 
+            {
+                _producerService.PublishSaleProcessed(
+                saleCode, productCode, [ErrorMessages.PRODUCTNOTFOUND]);
+
+                return;
+            }
+
+            if (sellAmount > product!.AmountInStock) _producerService.PublishSaleProcessed(
+                saleCode, productCode, [ErrorMessages.NOTENOUGHSTOCK]);
 
             int newAmountInStock = product.AmountInStock - sellAmount;
 
-            return _productRepository.UpdateStock(productCode, newAmountInStock);
+            _productRepository.UpdateStock(productCode, newAmountInStock);
+            _producerService.PublishSaleProcessed(saleCode, productCode);
         }
 
         public Product UpdateProduct(int productCode, Product product)

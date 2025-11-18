@@ -1,4 +1,4 @@
-﻿namespace Stock.API.Service.MessageConsumerServices.Configurations
+﻿namespace Stock.API.Service.RabbitMQ.Shared.Configurations
 {
     public class RabbitMQSettings
     {

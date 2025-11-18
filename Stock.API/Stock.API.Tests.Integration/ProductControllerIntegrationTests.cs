@@ -45,6 +45,7 @@ namespace Stock.API.Tests.Integration
             services.AddValidatorsFromAssemblyContaining<ProductValidator>();
 
             services.InjectRepositories(config);
+            services.InjectRabbitMQ(config);
             services.InjectServices();
             services.InjectValidators();
 

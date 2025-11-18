@@ -6,7 +6,7 @@ namespace Stock.API.Core.Contracts.Service
     {
         Product Create(Product product);
 
-        Product UpdateStock(int productCode, int sellAmount);
+        void UpdateStock(int saleCode, int productCode, int sellAmount);
 
         Product UpdateProduct(int productCode, Product product);
 

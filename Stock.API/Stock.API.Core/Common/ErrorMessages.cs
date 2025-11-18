@@ -4,6 +4,8 @@
     {
         public const string PRODUCTNOTFOUND = "Product not found.";
 
+        public const string NOTENOUGHSTOCK = "Sale amount exceeds product stock amount";
+
         public const string DATABASEERROR = "An unexpected database error occurred: {error}";
 
         public const string INTERNALERROR = "An unexpected internal error occurred: {error}";

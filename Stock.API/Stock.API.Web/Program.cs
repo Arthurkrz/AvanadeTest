@@ -40,9 +40,9 @@ builder.Services.AddScoped<IValidator<Product>, ProductValidator>();
 builder.Services.AddScoped<IValidator<ProductDTO>, ProductDTOValidator>();
 
 builder.Services.InjectRepositories(builder.Configuration);
+builder.Services.InjectRabbitMQ(builder.Configuration);
 builder.Services.InjectServices();
 builder.Services.InjectValidators();
-builder.Services.InjectRabbitMQ(builder.Configuration);
 builder.Services.AddValidatorsFromAssemblyContaining<ProductValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<ProductDTOValidator>();
 

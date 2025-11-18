@@ -5,14 +5,16 @@ using Microsoft.Extensions.DependencyInjection;
 using Stock.API.Architecture;
 using Stock.API.Architecture.Repositories;
 using Stock.API.Core.Contracts.Handler;
+using Stock.API.Core.Contracts.RabbitMQ;
 using Stock.API.Core.Contracts.Repository;
 using Stock.API.Core.Contracts.Service;
 using Stock.API.Core.Entities;
 using Stock.API.Core.Validators;
 using Stock.API.Service;
-using Stock.API.Service.MessageConsumerServices.BackgroundServices;
-using Stock.API.Service.MessageConsumerServices.Configurations;
-using Stock.API.Service.MessageConsumerServices.Handlers;
+using Stock.API.Service.RabbitMQ.ConsumerServices.BackgroundServices;
+using Stock.API.Service.RabbitMQ.ConsumerServices.Handlers;
+using Stock.API.Service.RabbitMQ.ProducerServices;
+using Stock.API.Service.RabbitMQ.Shared.Configurations;
 
 namespace Stock.API.IOC
 {
@@ -21,6 +23,7 @@ namespace Stock.API.IOC
         public static void InjectServices(this IServiceCollection services)
         {
             services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IProducerService, ProducerService>();
         }
 
         public static void InjectRepositories(this IServiceCollection services, IConfiguration config)

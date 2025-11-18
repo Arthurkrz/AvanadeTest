@@ -1,7 +1,9 @@
-﻿namespace Stock.API.Service.MessageConsumerServices.Models
+﻿namespace Stock.API.Service.RabbitMQ.Shared.Models
 {
-    public class ProductSaleDTO
+    public class ProductSaleDTO : GenericDTO
     {
+        public int SaleCode { get; set; }
+
         public int ProductCode { get; set; }
 
         public int SoldAmount { get; set; }

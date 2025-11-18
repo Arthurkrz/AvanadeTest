@@ -5,14 +5,14 @@ using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Stock.API.Core.Contracts.Handler;
-using Stock.API.Service.MessageConsumerServices.Configurations;
-using Stock.API.Service.MessageConsumerServices.Constants;
-using Stock.API.Service.MessageConsumerServices.Handlers;
-using Stock.API.Service.MessageConsumerServices.Models;
+using Stock.API.Service.RabbitMQ.ConsumerServices.Handlers;
+using Stock.API.Service.RabbitMQ.Shared.Configurations;
+using Stock.API.Service.RabbitMQ.Shared.Constants;
+using Stock.API.Service.RabbitMQ.Shared.Models;
 using System.Text;
 using System.Text.Json;
 
-namespace Stock.API.Service.MessageConsumerServices.BackgroundServices
+namespace Stock.API.Service.RabbitMQ.ConsumerServices.BackgroundServices
 {
     public class ConsumerService : BackgroundService
     {

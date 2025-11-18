@@ -1,9 +1,9 @@
 ﻿using Stock.API.Core.Contracts.Handler;
 using Stock.API.Core.Contracts.Service;
-using Stock.API.Service.MessageConsumerServices.Models;
+using Stock.API.Service.RabbitMQ.Shared.Models;
 using System.Text.Json;
 
-namespace Stock.API.Service.MessageConsumerServices.Handlers
+namespace Stock.API.Service.RabbitMQ.ConsumerServices.Handlers
 {
     public class SaleMessageHandler : IMessageHandler
     {
@@ -17,7 +17,7 @@ namespace Stock.API.Service.MessageConsumerServices.Handlers
         public async Task HandleAsync(string messageJson)
         {
             var message = JsonSerializer.Deserialize<ProductSaleDTO>(messageJson);
-            _productService.UpdateStock(message!.ProductCode, message.SoldAmount);
+            _productService.UpdateStock(message!.SaleCode, message!.ProductCode, message.SoldAmount);
         }
     }
 }
