@@ -17,7 +17,7 @@ namespace Sales.API.Service.RabbitMQ.MessageConsumerServices.Handlers
         public async Task HandleAsync(string messageJson)
         {
             var message = JsonSerializer.Deserialize<SaleStatusDTO>(messageJson);
-            _saleService.UpdateSaleStatus(message!.SaleCode, message.Status);
+            _saleService.UpdateSaleStatus(message!.SaleCode, message.Success, message.Errors);
         }
     }
 }

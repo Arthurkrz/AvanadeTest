@@ -43,7 +43,7 @@ namespace Sales.API.Web.Controllers
             return Ok(sales);
         }
 
-        public IActionResult GetSalesByBuyerId(int buyerCPF)
+        public IActionResult GetSalesByBuyerCPF(int buyerCPF)
         {
             var sales = _saleService.GetSalesByBuyerCPF(buyerCPF);
 
@@ -52,7 +52,7 @@ namespace Sales.API.Web.Controllers
             return Ok(sales);
         }
 
-        public IActionResult GetSalesByProductId(int productCode)
+        public IActionResult GetSalesByProductCode(int productCode)
         {
             var sales = _saleService.GetSalesByProductCode(productCode);
 

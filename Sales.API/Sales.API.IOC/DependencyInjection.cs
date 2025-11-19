@@ -3,17 +3,26 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sales.API.Architecture;
 using Sales.API.Architecture.Repositories;
+using Sales.API.Core.Contracts.Handler;
+using Sales.API.Core.Contracts.RabbitMQ;
 using Sales.API.Core.Contracts.Repository;
 using Sales.API.Core.Contracts.Service;
 using Sales.API.Service;
+using Sales.API.Service.RabbitMQ.MessageConsumerServices.BackgroundServices;
+using Sales.API.Service.RabbitMQ.MessageConsumerServices.Handlers;
+using Sales.API.Service.RabbitMQ.MessageProducerServices;
+using Sales.API.Service.RabbitMQ.Shared.Configurations;
 
 namespace Sales.API.IOC
 {
     public static class DependencyInjection
     {
-        public static void InjectServices(IServiceCollection services)
+        public static IServiceCollection InjectServices(this IServiceCollection services)
         {
             services.AddScoped<ISaleService, SaleService>();
+            services.AddScoped<IProducerService, ProducerService>();
+
+            return services;
         }
 
         public static IServiceCollection InjectRepositories(this IServiceCollection services, IConfiguration config)
@@ -28,7 +37,16 @@ namespace Sales.API.IOC
 
         public static IServiceCollection InjectRabbitMQ(this IServiceCollection services, IConfiguration config)
         {
-            // RabbitMQ logic
+            services.Configure<RabbitMQSettings>(config.GetSection("RabbitMQ"));
+
+            services.Scan(scan => scan
+                .FromAssemblyOf<SaleStatusMessageHandler>()
+                .AddClasses(classes => classes.AssignableTo<IMessageHandler>())
+                .AsSelfWithInterfaces()
+                .WithScopedLifetime());
+
+            services.AddHostedService<ConsumerService>();
+
             return services;
         }
     }

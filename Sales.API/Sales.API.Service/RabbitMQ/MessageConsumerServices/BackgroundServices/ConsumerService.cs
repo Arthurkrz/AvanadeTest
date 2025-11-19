@@ -76,7 +76,7 @@ namespace Sales.API.Service.RabbitMQ.MessageConsumerServices.BackgroundServices
                 var json = Encoding.UTF8.GetString(ea.Body.ToArray());
                 var message = JsonSerializer.Deserialize<SaleStatusDTO>(json);
 
-                if (message is null || message.SaleCode <= 0 || message.Status == SaleStatus.Pending)
+                if (message is null || message.SaleCode <= 0 || message.ProductCode <= 0)
                 {
                     _logger.LogWarning($"Invalid message received: {json}");
                     await _channel!.BasicNackAsync(ea.DeliveryTag, false, requeue: false);
@@ -90,7 +90,10 @@ namespace Sales.API.Service.RabbitMQ.MessageConsumerServices.BackgroundServices
                     await handler.HandleAsync(json);
 
                     await _channel!.BasicAckAsync(ea.DeliveryTag, false);
-                    _logger.LogInformation($"Processed sale status update for sale {message.SaleCode} with status {message.Status}");
+
+                    var status = message.Success ? "Success" : "Failure";
+
+                    _logger.LogInformation($"Processed sale status update for sale {message.SaleCode} with status {status}.");
                 }
                 else
                 {

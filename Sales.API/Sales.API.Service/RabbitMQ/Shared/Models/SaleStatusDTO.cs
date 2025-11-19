@@ -1,11 +1,13 @@
-﻿using Sales.API.Core.Enum;
-
-namespace Sales.API.Service.RabbitMQ.Shared.Models
+﻿namespace Sales.API.Service.RabbitMQ.Shared.Models
 {
-    public class SaleStatusDTO
+    public class SaleStatusDTO : GenericDTO
     {
         public int SaleCode { get; set; }
 
-        public SaleStatus Status { get; set; }
+        public int ProductCode { get; set; }
+
+        public bool Success { get; set; }
+
+        public IList<string> Errors { get; set; } = [];
     }
 }

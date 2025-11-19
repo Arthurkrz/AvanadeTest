@@ -16,8 +16,4 @@
     <ProjectReference Include="..\Sales.API.Core\Sales.API.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="RabbitMQ\MessageProducerServices\" />
-  </ItemGroup>
-
 </Project>

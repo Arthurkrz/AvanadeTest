@@ -1,5 +1,4 @@
 ﻿using Sales.API.Core.Entities;
-using Sales.API.Core.Enum;
 
 namespace Sales.API.Core.Contracts.Service
 {
@@ -7,7 +6,7 @@ namespace Sales.API.Core.Contracts.Service
     {
         Task<Sale> Sell(Sale sale);
 
-        Sale UpdateSaleStatus(int saleCode, SaleStatus status);
+        Sale UpdateSaleStatus(int saleCode, bool success, IList<string> errors);
 
         Sale GetSaleByCode(int saleCode);
 
