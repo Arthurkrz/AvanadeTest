@@ -1,10 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Sales.API.Core.Contracts.Handler;
-using Sales.API.Core.Enum;
 using Sales.API.Service.RabbitMQ.MessageConsumerServices.Handlers;
 using Sales.API.Service.RabbitMQ.Shared.Configurations;
 using Sales.API.Service.RabbitMQ.Shared.Constants;
@@ -16,7 +16,7 @@ namespace Sales.API.Service.RabbitMQ.MessageConsumerServices.BackgroundServices
 {
     public class ConsumerService : BackgroundService
     {
-        private readonly RabbitMQSettings _settings;
+        private readonly IOptions<RabbitMQSettings> _settings;
         private readonly ILogger<ConsumerService> _logger;
         private readonly IServiceProvider _serviceProvider;
 
@@ -28,7 +28,7 @@ namespace Sales.API.Service.RabbitMQ.MessageConsumerServices.BackgroundServices
             { "sale.processed", typeof(SaleStatusMessageHandler) }
         };
         
-        public ConsumerService(RabbitMQSettings settings, ILogger<ConsumerService> logger, IServiceProvider serviceProvider)
+        public ConsumerService(IOptions<RabbitMQSettings> settings, ILogger<ConsumerService> logger, IServiceProvider serviceProvider)
         {
             _settings = settings;
             _logger = logger;
@@ -39,11 +39,11 @@ namespace Sales.API.Service.RabbitMQ.MessageConsumerServices.BackgroundServices
         {
             var factory = new ConnectionFactory()
             {
-                HostName = _settings.HostName,
-                Port = _settings.Port,
-                UserName = _settings.UserName,
-                Password = _settings.Password,
-                VirtualHost = _settings.VirtualHost
+                HostName = _settings.Value.HostName,
+                Port = _settings.Value.Port,
+                UserName = _settings.Value.UserName,
+                Password = _settings.Value.Password,
+                VirtualHost = _settings.Value.VirtualHost
             };
 
             _connection = await factory.CreateConnectionAsync();

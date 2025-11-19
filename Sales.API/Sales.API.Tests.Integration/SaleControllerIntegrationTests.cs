@@ -60,6 +60,8 @@ namespace Sales.API.Tests.Integration
             Cleanup();
 
             var sale = new SaleDTO() { BuyerCPF = 1, ProductCode = 1, SellAmount = 1 };
+
+
         }
 
         [Theory]

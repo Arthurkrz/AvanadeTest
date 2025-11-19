@@ -3,11 +3,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sales.API.Architecture;
 using Sales.API.Architecture.Repositories;
+using Sales.API.Core.Contracts.Client;
 using Sales.API.Core.Contracts.Handler;
 using Sales.API.Core.Contracts.RabbitMQ;
 using Sales.API.Core.Contracts.Repository;
 using Sales.API.Core.Contracts.Service;
 using Sales.API.Service;
+using Sales.API.Service.Clients;
 using Sales.API.Service.RabbitMQ.MessageConsumerServices.BackgroundServices;
 using Sales.API.Service.RabbitMQ.MessageConsumerServices.Handlers;
 using Sales.API.Service.RabbitMQ.MessageProducerServices;
@@ -46,6 +48,21 @@ namespace Sales.API.IOC
                 .WithScopedLifetime());
 
             services.AddHostedService<ConsumerService>();
+
+            return services;
+        }
+
+        public static IServiceCollection InjectHttpClients(this IServiceCollection services, IConfiguration config)
+        {
+            services.AddHttpClient<IStockClient, StockClient>(client =>
+            {
+                client.BaseAddress = new Uri(config["Services:StockAPI"]!);
+            });
+
+            services.AddHttpClient<IIdentityClient, IdentityClient>(client =>
+            {
+                client.BaseAddress = new Uri(config["Services:IdentityAPI"]!);
+            });
 
             return services;
         }
