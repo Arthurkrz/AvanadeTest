@@ -1,4 +1,5 @@
-﻿using Sales.API.Core.Contracts.Repository;
+﻿using Microsoft.EntityFrameworkCore;
+using Sales.API.Core.Contracts.Repository;
 using Sales.API.Core.Entities;
 using Sales.API.Core.Enum;
 
@@ -13,39 +14,41 @@ namespace Sales.API.Architecture.Repositories
             _context = context ?? throw new ArgumentNullException(nameof(Context));
         }
 
-        public Sale Add(Sale sale)
+        public async Task<Sale> AddAsync(Sale sale)
         {
-            _context.Add(sale);
-            _context.SaveChanges();
+            await _context.AddAsync(sale);
+            await _context.SaveChangesAsync();
 
             return sale;
         }
 
-        public Sale UpdateStatus(int saleCode, SaleStatus status)
+        public async Task<Sale> UpdateStatusAsync(int saleCode, SaleStatus status)
         {
-            var existingEntity = _context.Sales.FirstOrDefault(s => s.SaleCode == saleCode);
+            var existingEntity = await 
+                _context.Sales.FirstOrDefaultAsync(s => s.SaleCode == saleCode);
 
             existingEntity!.Status = status;
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return existingEntity;
         }
 
-        public IEnumerable<Sale> GetAll() =>
-            _context.Set<Sale>().AsQueryable();
+        public async Task<IEnumerable<Sale>> GetAllAsync() =>
+            await _context.Set<Sale>().ToListAsync();
 
-        public Sale GetById(Guid id) => _context.Sales.Find(id)!;
+        public async Task<Sale> GetByIdAsync(Guid id) => 
+            (await _context.Sales.FindAsync(id))!;
 
-        public Sale GetByCode(int saleCode) =>
-            _context.Sales.FirstOrDefault(s => s.SaleCode == saleCode)!;
+        public async Task<Sale> GetByCodeAsync(int saleCode) =>
+            (await _context.Sales.FirstOrDefaultAsync(s => s.SaleCode == saleCode))!;
 
-        public IEnumerable<Sale> GetByBuyer(int buyerCPF) =>
-            _context.Sales.Where(s => s.BuyerCPF == buyerCPF).OrderBy(s => s.BuyerCPF);
+        public async Task<IEnumerable<Sale>> GetByBuyerAsync(int buyerCPF) =>
+            await _context.Sales.Where(s => s.BuyerCPF == buyerCPF).OrderBy(s => s.BuyerCPF).ToListAsync();
 
-        public IEnumerable<Sale> GetByProductCode(int productCode) =>
-            _context.Sales.Where(s => s.ProductCode == productCode).OrderBy(s => s.ProductCode);
+        public async Task<IEnumerable<Sale>> GetByProductCodeAsync(int productCode) =>
+            await _context.Sales.Where(s => s.ProductCode == productCode).OrderBy(s => s.ProductCode).ToListAsync();
 
-        public bool IsSaleExistingByCode(int saleCode) =>
-            _context.Sales.Any(s => s.SaleCode == saleCode);
+        public async Task<bool> IsSaleExistingByCodeAsync(int saleCode) =>
+            await _context.Sales.AnyAsync(s => s.SaleCode == saleCode);
     }
 }

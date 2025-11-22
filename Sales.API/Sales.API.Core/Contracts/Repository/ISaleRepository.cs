@@ -5,20 +5,20 @@ namespace Sales.API.Core.Contracts.Repository
 {
     public interface ISaleRepository
     {
-        Sale Add(Sale sale);
+        Task<Sale> AddAsync(Sale sale);
 
-        Sale UpdateStatus(int saleCode, SaleStatus status);
+        Task<Sale> UpdateStatusAsync(int saleCode, SaleStatus status);
 
-        Sale GetById(Guid id);
+        Task<Sale> GetByIdAsync(Guid id);
 
-        Sale GetByCode(int saleCode);
+        Task<Sale> GetByCodeAsync(int saleCode);
 
-        IEnumerable<Sale> GetAll();
+        Task<IEnumerable<Sale>> GetAllAsync();
 
-        IEnumerable<Sale> GetByBuyer(int buyerCPF);
+        Task<IEnumerable<Sale>> GetByBuyerAsync(int buyerCPF);
 
-        IEnumerable<Sale> GetByProductCode(int productCode);
+        Task<IEnumerable<Sale>> GetByProductCodeAsync(int productCode);
 
-        bool IsSaleExistingByCode(int saleCode);
+        Task<bool> IsSaleExistingByCodeAsync(int saleCode);
     }
 }

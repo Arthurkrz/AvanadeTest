@@ -4,16 +4,16 @@ namespace Sales.API.Core.Contracts.Service
 {
     public interface ISaleService
     {
-        Task<Sale> Sell(Sale sale);
+        Task<Sale> SellAsync(Sale sale);
 
-        Sale UpdateSaleStatus(int saleCode, bool success, IList<string> errors);
+        Task<Sale> UpdateSaleStatusAsync(int saleCode, bool success, IList<string> errors);
 
-        Sale GetSaleByCode(int saleCode);
+        Task<Sale> GetSaleByCodeAsync(int saleCode);
 
-        IEnumerable<Sale> GetAllSales();
+        Task<IEnumerable<Sale>> GetAllSalesAsync();
 
-        IEnumerable<Sale> GetSalesByBuyerCPF(int buyerCPF);
+        Task<IEnumerable<Sale>> GetSalesByBuyerCPFAsync(int buyerCPF);
 
-        IEnumerable<Sale> GetSalesByProductCode(int productCode);
+        Task<IEnumerable<Sale>> GetSalesByProductCodeAsync(int productCode);
     }
 }

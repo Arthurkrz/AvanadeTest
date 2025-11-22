@@ -1,67 +1,71 @@
-using FluentAssertions;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sales.API.Architecture;
 using Sales.API.Core.Common;
-using Sales.API.Core.Contracts.Repository;
-using Sales.API.Core.Contracts.Service;
 using Sales.API.Core.Entities;
 using Sales.API.Core.Enum;
-using Sales.API.IOC;
 using Sales.API.Tests.Integration.Utilities;
-using Sales.API.Web.Controllers;
 using Sales.API.Web.DTOs;
+using System.Net;
+using System.Net.Http.Json;
 
 namespace Sales.API.Tests.Integration
 {
     public class SaleControllerIntegrationTests : IClassFixture<SalesApiFactory>
     {
-        private readonly SaleController _sut;
-        private readonly IServiceProvider _serviceProvider;
-        private readonly Context _context;
+        private readonly SalesApiFactory _factory;
         private readonly HttpClient _client;
-
-        private readonly ISaleService _saleService;
-        private readonly ISaleRepository _saleRepository;
 
         public SaleControllerIntegrationTests(SalesApiFactory factory)
         {
-            var config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .Build();
-
-            ServiceCollection services = new();
-
-            services.InjectRepositories(config);
-            services.InjectRabbitMQ(config);
-            services.InjectServices();
-
-            services.AddDbContext<Context>(options =>
-                options.UseSqlServer(config.GetConnectionString("DefaultConnection")));
-
-            _serviceProvider = services.BuildServiceProvider();
-
-            _context = _serviceProvider.GetRequiredService<Context>();
-            _saleService = _serviceProvider.GetRequiredService<ISaleService>();
-            _saleRepository = _serviceProvider.GetRequiredService<ISaleRepository>();
-
+            _factory = factory;
             _client = factory.CreateClient();
+        }
 
-            _sut = new SaleController(_saleService);
+        private async Task Cleanup()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<Context>();
+            await db.Database.ExecuteSqlRawAsync("TRUNCATE TABLE Sales");
+            await db.SaveChangesAsync();
         }
 
         [Fact]
-        public void ProcessSale_ShouldProcessSale()
+        public async Task ProcessSale_ShouldProcessSale()
         {
             // Arrange
-            Cleanup();
+            await Cleanup();
 
-            var sale = new SaleDTO() { BuyerCPF = 1, ProductCode = 1, SellAmount = 1 };
+            using var scope = _factory.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<Context>();
 
+            var dto = new SaleDTO() { BuyerCPF = 1, ProductCode = 1, SellAmount = 1 };
 
+            // Act
+            var response = await _client.PostAsJsonAsync("/api/sales/processSale", dto);
+
+            // Assert
+            response.EnsureSuccessStatusCode();
+
+            var sale = await response.Content.ReadFromJsonAsync<Sale>();
+            var sales = await db.Sales.ToListAsync();
+
+            Assert.NotEqual(Guid.Empty, sale!.ID);
+            Assert.NotEqual(0, sale.SaleCode);
+            Assert.Equal(1, sale.BuyerCPF);
+            Assert.Equal(1, sale.ProductCode);
+            Assert.Equal(1, sale.SellAmount);
+            Assert.Equal(SaleStatus.Pending, sale.Status);
+
+            Assert.Single(sales);
+            var addedSale = sales.First();
+
+            Assert.NotEqual(Guid.Empty, addedSale.ID);
+            Assert.NotEqual(0, addedSale.SaleCode);
+            Assert.Equal(1, addedSale.BuyerCPF);
+            Assert.Equal(1, addedSale.ProductCode);
+            Assert.Equal(1, addedSale.SellAmount);
+            Assert.Equal(SaleStatus.Pending, addedSale.Status);
         }
 
         [Theory]
@@ -73,194 +77,201 @@ namespace Sales.API.Tests.Integration
         [InlineData(1, 1, -1)]
         [InlineData(0, 0, 0)]
         [InlineData(-1, -1, -1)]
-        public void ProcessSale_ShouldReturnBadRequest_WhenSaleRequestFormatIsIncorrect(int buyerCpf, int productCode, int sellAmount)
+        public async Task ProcessSale_ShouldReturnBadRequest_WhenSaleRequestFormatIsIncorrect(int buyerCpf, int productCode, int sellAmount)
         {
             // Arrange
-            Cleanup();
+            await Cleanup();
 
-            var sale = new SaleDTO() { BuyerCPF = buyerCpf, ProductCode = productCode, SellAmount = sellAmount };
+            var dto = new SaleDTO() { BuyerCPF = buyerCpf, ProductCode = productCode, SellAmount = sellAmount };
 
             // Act
-            var result = _sut.ProcessSale(sale);
+            var response = await _client.PostAsJsonAsync("/api/sales/processSale", dto);
 
             // Assert
-            var badRequest = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal(ErrorMessages.INCORRECTFORMAT, badRequest.Value);
-            
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+            var msg = await response.Content.ReadAsStringAsync();
+            Assert.Contains(ErrorMessages.INCORRECTFORMAT, msg);
         }
 
         [Fact]
-        public void GetAllSales_ShouldReturnAllSales()
+        public async Task GetAllSales_ShouldReturnAllSales()
         {
             // Arrange
-            Cleanup();
+            await Cleanup();
+
+            using var scope = _factory.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<Context>();
 
             var saleList = new List<Sale>
             {
-                new Sale(3, 1, 1, SaleStatus.Completed),
-                new Sale(1, 2, 1, SaleStatus.Completed),
-                new Sale(1, 1, 3, SaleStatus.Rejected),
-                new Sale(2, 1, 1, SaleStatus.Completed),
-                new Sale(1, 1, 1, SaleStatus.Rejected),
+                new Sale(3, 1, 1, SaleStatus.Completed) { SaleCode = 1 },
+                new Sale(1, 2, 1, SaleStatus.Completed) { SaleCode = 2 },
+                new Sale(1, 1, 3, SaleStatus.Rejected) { SaleCode = 3 },
+                new Sale(2, 1, 1, SaleStatus.Completed) { SaleCode = 4 },
+                new Sale(1, 1, 1, SaleStatus.Rejected) { SaleCode = 5 },
             };
 
-            foreach (var sale in saleList) _saleRepository.Add(sale);
+            await db.Sales.AddRangeAsync(saleList);
+            await db.SaveChangesAsync();
 
             // Act
-            var result = _sut.GetAllSales();
+            var response = await _client.GetAsync("/api/sales");
 
             // Assert
-            var ok = Assert.IsType<OkObjectResult>(result);
-            var sales = Assert.IsAssignableFrom<IEnumerable<Sale>>(ok.Value);
+            response.EnsureSuccessStatusCode();
 
-            sales.Should().BeEquivalentTo(
-                saleList, options => options.Excluding(s => s.ID));
+            var returned = await response.Content.ReadFromJsonAsync<IEnumerable<Sale>>();
+
+            Assert.NotNull(returned);
+            Assert.Equal(5, returned.Count());
         }
 
         [Fact]
-        public void GetAllSales_ShouldReturnNotFound_WhenNoSalesExist()
-        {
-            Cleanup();
-
-            // Act
-            var result = _sut.GetAllSales();
-
-            // Assert
-            var notFound = Assert.IsType<NotFoundObjectResult>(result);
-            Assert.Equal(ErrorMessages.NOSALESFOUND, notFound.Value);
-        }
-
-        [Fact]
-        public void GetSalesByBuyerCPF_ShouldReturnSalesForGivenBuyerCPF()
+        public async Task GetAllSales_ShouldReturnNotFound_WhenNoSalesExist()
         {
             // Arrange
-            Cleanup();
+            await Cleanup();
+
+            // Act
+            var response = await _client.GetAsync("/api/sales");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+
+            var msg = await response.Content.ReadAsStringAsync();
+            Assert.Contains(ErrorMessages.NOSALESFOUND, msg);
+        }
+
+        [Fact]
+        public async Task GetSalesByBuyerCPF_ShouldReturnSalesForGivenBuyerCPF()
+        {
+            // Arrange
+            await Cleanup();
+
+            using var scope = _factory.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<Context>();
 
             var saleList = new List<Sale>
             {
-                new Sale(3, 1, 1, SaleStatus.Completed),
-                new Sale(1, 2, 1, SaleStatus.Completed),
-                new Sale(1, 1, 3, SaleStatus.Rejected),
-                new Sale(2, 1, 1, SaleStatus.Completed),
-                new Sale(2, 1, 1, SaleStatus.Rejected),
+                new Sale(3, 1, 1, SaleStatus.Completed) { SaleCode = 1 },
+                new Sale(1, 2, 1, SaleStatus.Completed) { SaleCode = 2 },
+                new Sale(1, 1, 3, SaleStatus.Rejected) { SaleCode = 3 },
+                new Sale(2, 1, 1, SaleStatus.Completed) { SaleCode = 4 },
+                new Sale(2, 1, 1, SaleStatus.Rejected) { SaleCode = 5 },
             };
 
-            var expectedSales = new List<Sale>
-            {
-                new Sale(2, 1, 1, SaleStatus.Completed),
-                new Sale(2, 1, 1, SaleStatus.Rejected)
-            };
+            await db.Sales.AddRangeAsync(saleList);
+            await db.SaveChangesAsync();
 
             // Act
-            var result = _sut.GetSalesByBuyerCPF(2);
+            var response = await _client.GetAsync("/api/sales/buyer/2");
 
             // Assert
-            var ok = Assert.IsType<OkObjectResult>(result);
-            var sales = Assert.IsAssignableFrom<IEnumerable<Sale>>(ok.Value);
+            response.EnsureSuccessStatusCode();
+            var sales = await response.Content.ReadFromJsonAsync<IEnumerable<Sale>>();
 
-            sales.Should().BeEquivalentTo(
-                expectedSales, options => options.Excluding(s => s.ID));
+            Assert.NotNull(sales);
+            Assert.Equal(2, sales.Count());
         }
 
         [Fact]
-        public void GetSalesByBuyerCPF_ShouldReturnNotFound_WhenBuyerNotFound()
+        public async Task GetSalesByBuyerCPF_ShouldReturnNotFound_WhenBuyerNotFound()
         {
             // Arrange
-            Cleanup();
+            await Cleanup();
 
             // Act
-            var result = _sut.GetSalesByBuyerCPF(9999);
+            var response = await _client.GetAsync("/api/sales/buyer/9999");
 
             // Assert
-            var notFound = Assert.IsType<NotFoundObjectResult>(result);
-            Assert.Equal(ErrorMessages.NOSALESFOUND, notFound.Value);
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
         [Fact]
-        public void GetSalesByProductCode_ShouldReturnSalesForGivenProductCode()
+        public async Task GetSalesByProductCode_ShouldReturnSalesForGivenProductCode()
         {
             // Arrange
-            Cleanup();
+            await Cleanup();
+
+            using var scope = _factory.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<Context>();
 
             var saleList = new List<Sale>
             {
-                new Sale(3, 1, 1, SaleStatus.Completed),
-                new Sale(1, 2, 1, SaleStatus.Completed),
-                new Sale(1, 1, 3, SaleStatus.Rejected),
-                new Sale(2, 2, 1, SaleStatus.Completed),
-                new Sale(2, 3, 1, SaleStatus.Rejected),
+                new Sale(3, 1, 1, SaleStatus.Completed) { SaleCode = 1},
+                new Sale(1, 2, 1, SaleStatus.Completed) { SaleCode = 2},
+                new Sale(1, 1, 3, SaleStatus.Rejected) { SaleCode = 3},
+                new Sale(2, 2, 1, SaleStatus.Completed) { SaleCode = 4 },
+                new Sale(2, 3, 1, SaleStatus.Rejected) { SaleCode = 5 },
             };
 
-            var expectedSales = new List<Sale>
+            await db.Sales.AddRangeAsync(saleList);
+            await db.SaveChangesAsync();
+
+            // Act
+            var response = await _client.GetAsync("/api/sales/product/2");
+
+            // Assert
+            response.EnsureSuccessStatusCode();
+            var sales = await response.Content.ReadFromJsonAsync<IEnumerable<Sale>>();
+
+            Assert.Equal(2, sales!.Count());
+        }
+
+        [Fact]
+        public async Task GetSalesByProductCode_ShouldReturnNotFound_WhenProductNotFound()
+        {
+            // Arrange
+            await Cleanup();
+
+            // Act
+            var response = await _client.GetAsync("/api/sales/product/999");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task GetByCode_ShouldReturnSaleForGivenSaleCode()
+        {
+            // Arrange
+            await Cleanup();
+
+            using var scope = _factory.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<Context>();
+
+            var sale = new Sale(1, 1, 1, SaleStatus.Completed)
             {
-                new Sale(1, 2, 1, SaleStatus.Completed),
-                new Sale(2, 2, 1, SaleStatus.Completed)
+                SaleCode = 1234
             };
 
+            await db.Sales.AddAsync(sale);
+            await db.SaveChangesAsync();
+
             // Act
-            var result = _sut.GetSalesByProductCode(2);
+            var response = await _client.GetAsync("/api/sales/1234");
 
             // Assert
-            var ok = Assert.IsType<OkObjectResult>(result);
-            var sales = Assert.IsAssignableFrom<IEnumerable<Sale>>(ok.Value);
+            response.EnsureSuccessStatusCode();
 
-            sales.Should().BeEquivalentTo(
-                expectedSales, options => options.Excluding(s => s.ID));
+            var returned = await response.Content.ReadFromJsonAsync<Sale>();
+
+            Assert.NotNull(returned);
+            Assert.Equal(1234, returned.SaleCode);
         }
 
         [Fact]
-        public void GetSalesByProductCode_ShouldReturnNotFound_WhenProductNotFound()
+        public async Task GetByCode_ShouldReturnNotFound_WhenSaleNotFound()
         {
             // Arrange
-            Cleanup();
+            await Cleanup();
 
             // Act
-            var result = _sut.GetSalesByProductCode(9999);
+            var response = await _client.GetAsync("/api/sales/9999");
 
             // Assert
-            var notFound = Assert.IsType<NotFoundObjectResult>(result);
-            Assert.Equal(ErrorMessages.NOSALESFOUND, notFound.Value);
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
-
-        [Fact]
-        public void GetByCode_ShouldReturnSaleForGivenSaleCode()
-        {
-            // Arrange
-            Cleanup();
-
-            _context.Database.ExecuteSqlRaw($"INSERT INTO Sales (" +
-                $"BuyerCPF, ProductCode, SellAmount, Status, ID, SaleCode) " +
-                $"VALUES (1, 1, 1, 1, {Guid.NewGuid()}, 1234)");
-
-            // Act
-            var result = _sut.GetByCode(1234);
-
-            // Assert
-            var ok = Assert.IsType<OkObjectResult>(result);
-            var sale = Assert.IsAssignableFrom<Sale>(ok.Value);
-
-            Assert.Equal(1, sale.BuyerCPF);
-            Assert.Equal(1, sale.ProductCode);
-            Assert.Equal(1, sale.SellAmount);
-            Assert.Equal(SaleStatus.Completed, sale.Status);
-            Assert.Equal(1234, sale.SaleCode);
-        }
-
-        [Fact]
-        public void GetByCode_ShouldReturnNotFound_WhenSaleNotFound()
-        {
-            // Arrange
-            Cleanup();
-
-            // Act
-            var result = _sut.GetByCode(9999);
-
-            // Assert
-            var notFound = Assert.IsType<NotFoundObjectResult>(result);
-            Assert.Equal(ErrorMessages.SALENOTFOUND, notFound.Value);
-        }
-
-        private void Cleanup() => 
-            _context.Database.ExecuteSqlRaw("TRUNCATE TABLE Sales");
     }
 }

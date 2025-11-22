@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
+using RabbitMQ.Client;
 using Sales.API.Core.Contracts.Client;
 
 namespace Sales.API.Tests.Integration.Utilities
@@ -15,6 +15,8 @@ namespace Sales.API.Tests.Integration.Utilities
             {
                 services.RemoveAll<IStockClient>();
                 services.RemoveAll<IIdentityClient>();
+                services.RemoveAll<IConnectionFactory>();
+                services.RemoveAll<IChannel>();
 
                 services.AddSingleton<IStockClient, FakeStockClient>();
                 services.AddSingleton<IIdentityClient, FakeIdentityClient>();

@@ -29,7 +29,7 @@ namespace Sales.API.Tests
         }
 
         [Fact]
-        public async Task Sell_ShouldInvokeRepositoryAddMethodAndMessagePublishMethod()
+        public async Task SellAsync_ShouldInvokeRepositoryAddMethodAndMessagePublishMethod()
         {
             // Arrange
             _stockClientMock.Setup(s => s.ProductExistsAsync(
@@ -38,37 +38,37 @@ namespace Sales.API.Tests
             _identityClientMock.Setup(i => i.BuyerExistsAsync(
                 It.IsAny<int>())).ReturnsAsync(true);
 
-            _saleRepositoryMock.Setup(r => r.GetById(
-                It.IsAny<Guid>())).Returns(It.IsAny<Sale>());
+            _saleRepositoryMock.Setup(r => r.GetByIdAsync(
+                It.IsAny<Guid>())).ReturnsAsync(It.IsAny<Sale>());
 
             var sale = new Sale(1, 1, 1, SaleStatus.Pending);
 
             // Act
-            await _sut.Sell(sale);
+            await _sut.SellAsync(sale);
 
             // Assert
             _producerServiceMock.Verify(p => p.PublishProductSale(
                 sale.SaleCode, sale.ProductCode, sale.SellAmount), Times.Once);
 
-            _saleRepositoryMock.Verify(r => r.Add(sale), Times.Once);
+            _saleRepositoryMock.Verify(r => r.AddAsync(sale), Times.Once);
         }
 
         [Fact]
-        public async Task Sell_ShouldThrowException_WhenProductDoesNotExist()
+        public async Task SellAsync_ShouldThrowException_WhenProductDoesNotExist()
         {
             // Arrange
             _stockClientMock.Setup(s => s.ProductExistsAsync(
                 It.IsAny<int>())).ReturnsAsync(false);
 
             // Act & Assert
-            var saex = await Assert.ThrowsAsync<SaleApiException>(async () => 
-                await _sut.Sell(new Sale(1, 1, 1, SaleStatus.Pending)));
+            var saex = await Assert.ThrowsAsync<SaleApiException>(() => 
+                _sut.SellAsync(new Sale(1, 1, 1, SaleStatus.Pending)));
 
             Assert.Equal(ErrorMessages.INVALIDSALEREQUEST, saex.Message);
         }
 
         [Fact]
-        public async Task Sell_ShouldThrowException_WhenBuyerDoesNotExist()
+        public async Task SellAsync_ShouldThrowException_WhenBuyerDoesNotExist()
         {
             // Arrange
             _stockClientMock.Setup(s => s.ProductExistsAsync(
@@ -78,74 +78,74 @@ namespace Sales.API.Tests
                 It.IsAny<int>())).ReturnsAsync(false);
 
             // Act & Assert
-            var saex = await Assert.ThrowsAsync<SaleApiException>(async () =>
-                await _sut.Sell(new Sale(1, 1, 1, SaleStatus.Pending)));
+            var saex = await Assert.ThrowsAsync<SaleApiException>(() =>
+                _sut.SellAsync(new Sale(1, 1, 1, SaleStatus.Pending)));
 
             Assert.Equal(ErrorMessages.INVALIDSALEREQUEST, saex.Message);
         }
 
         [Fact]
-        public void UpdateSaleStatus_ShouldInvokeRepositoryUpdateStatusWithCompleted_WhenSuccessIsTrueAndNoErrorsExist()
+        public async Task UpdateSaleStatusAsync_ShouldInvokeRepositoryUpdateStatusWithCompleted_WhenSuccessIsTrueAndNoErrorsExist()
         {
             // Arrange
-            _saleRepositoryMock.Setup(r => r.IsSaleExistingByCode(
-                It.IsAny<int>())).Returns(true);
+            _saleRepositoryMock.Setup(r => r.IsSaleExistingByCodeAsync(
+                It.IsAny<int>())).ReturnsAsync(true);
 
-            _saleRepositoryMock.Setup(r => r.GetByCode(
-                It.IsAny<int>())).Returns(It.IsAny<Sale>());
+            _saleRepositoryMock.Setup(r => r.GetByCodeAsync(
+                It.IsAny<int>())).ReturnsAsync(It.IsAny<Sale>());
 
             // Act
-            _sut.UpdateSaleStatus(1, true, []);
+            await _sut.UpdateSaleStatusAsync(1, true, []);
 
             // Assert
-            _saleRepositoryMock.Verify(r => r.UpdateStatus(
+            _saleRepositoryMock.Verify(r => r.UpdateStatusAsync(
                 1, SaleStatus.Completed), Times.Once);
 
-            _saleRepositoryMock.Verify(r => r.UpdateStatus(
+            _saleRepositoryMock.Verify(r => r.UpdateStatusAsync(
                 1, SaleStatus.Rejected), Times.Never);
         }
 
         [Fact]
-        public void UpdateSaleStatus_ShouldInvokeRepositoryUpdateStatusMethodWithRejectedAndThrowException_WhenSuccessIsFalseAndErrorsExist()
+        public async Task UpdateSaleStatusAsync_ShouldInvokeRepositoryUpdateStatusMethodWithRejectedAndThrowException_WhenSuccessIsFalseAndErrorsExist()
         {
             // Arrange
-            _saleRepositoryMock.Setup(r => r.IsSaleExistingByCode(
-                It.IsAny<int>())).Returns(true);
+            _saleRepositoryMock.Setup(r => r.IsSaleExistingByCodeAsync(
+                It.IsAny<int>())).ReturnsAsync(true);
 
-            _saleRepositoryMock.Setup(r => r.GetByCode(
-                It.IsAny<int>())).Returns(It.IsAny<Sale>());
+            _saleRepositoryMock.Setup(r => r.GetByCodeAsync(It.IsAny<int>()))
+                .ReturnsAsync(new Sale(1, 1, 1, SaleStatus.Pending));
 
             // Act & Assert
-            var saex = Assert.Throws<SaleApiException>(() => 
-                _sut.UpdateSaleStatus(1, false, ["ERROR"]));
+            var saex = await Assert.ThrowsAsync<SaleApiException>(() => 
+                _sut.UpdateSaleStatusAsync(1, false, ["ERROR"]));
 
-            _saleRepositoryMock.Verify(r => r.UpdateStatus(
+            _saleRepositoryMock.Verify(r => r.UpdateStatusAsync(
                 1, SaleStatus.Rejected), Times.Once);
 
-            _saleRepositoryMock.Verify(r => r.UpdateStatus(
+            _saleRepositoryMock.Verify(r => r.UpdateStatusAsync(
                 1, SaleStatus.Completed), Times.Never);
         }
 
         [Fact]
-        public void UpdateSaleStatus_ShouldThrowException_WhenSuccessIsTrueAndErrorsExist()
+        public async Task UpdateSaleStatusAsync_ShouldThrowException_WhenSuccessIsTrueAndErrorsExist()
         {
             // Act & Assert
-            var saex = Assert.Throws<SaleApiException>(() =>
-                _sut.UpdateSaleStatus(1, true, ["ERROR"]));
+            var saex = await Assert.ThrowsAsync<SaleApiException>(() =>
+                _sut.UpdateSaleStatusAsync(1, true, ["ERROR"]));
 
             Assert.Equal(ErrorMessages.INVALIDSALESTATUSRESPONSE, saex.Message);
         }
 
         [Fact]
-        public void UpdateSaleStatus_ShouldThrowException_WhenSaleDoesNotExist()
+        public async Task UpdateSaleStatusAsync_ShouldThrowException_WhenSaleDoesNotExist()
         {
             // Arrange
-            _saleRepositoryMock.Setup(r => r.IsSaleExistingByCode(
-                It.IsAny<int>())).Returns(false);
+            _saleRepositoryMock.Setup(r => r.IsSaleExistingByCodeAsync(
+                It.IsAny<int>())).ReturnsAsync(false);
 
             // Act & Assert
-            var saex = Assert.Throws<SaleApiException>(() =>
-                _sut.UpdateSaleStatus(1, false, ["ERROR"]));
+            var saex = await Assert.ThrowsAsync<SaleApiException>(() =>
+                _sut.UpdateSaleStatusAsync(1, false, ["ERROR"]));
 
             Assert.Equal(ErrorMessages.SALENOTFOUND, saex.Message);
         }

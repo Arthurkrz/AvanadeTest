@@ -26,58 +26,58 @@ namespace Sales.API.Service
             _producerService = producerService;
         }
 
-        public async Task<Sale> Sell(Sale sale)
+        public async Task<Sale> SellAsync(Sale sale)
         {
             if (await _stockClient.ProductExistsAsync(sale.ProductCode) &&
                 await _identityClient.BuyerExistsAsync(sale.BuyerCPF))
             {
                 do sale.SaleCode = _random.Next(1, 10000);
-                while (_saleRepository.IsSaleExistingByCode(sale.SaleCode));
+                while (await _saleRepository.IsSaleExistingByCodeAsync(sale.SaleCode));
 
                 await _producerService.PublishProductSale(
                     sale.SaleCode, sale.ProductCode, sale.SellAmount);
 
-                _saleRepository.Add(sale);
-                return _saleRepository.GetById(sale.ID);
+                await _saleRepository.AddAsync(sale);
+                return await _saleRepository.GetByIdAsync(sale.ID);
             }
 
             throw new SaleApiException(ErrorMessages.INVALIDSALEREQUEST,
                 ErrorType.BusinessRuleViolation);
         }
 
-        public Sale UpdateSaleStatus(int saleCode, bool success, IList<string> errors)
+        public async Task<Sale> UpdateSaleStatusAsync(int saleCode, bool success, IList<string> errors)
         {
             if (success && errors.Any())
                 throw new SaleApiException(ErrorMessages.INVALIDSALESTATUSRESPONSE, 
                     ErrorType.BusinessRuleViolation);
 
-            if (!_saleRepository.IsSaleExistingByCode(saleCode))
+            if (!await _saleRepository.IsSaleExistingByCodeAsync(saleCode))
                 throw new SaleApiException(ErrorMessages.SALENOTFOUND, 
                     ErrorType.NotFound);
 
             if (!success)
             {
-                _saleRepository.UpdateStatus(saleCode, SaleStatus.Rejected);
+                await _saleRepository.UpdateStatusAsync(saleCode, SaleStatus.Rejected);
 
                 throw new SaleApiException(
                     ErrorMessages.SALEFAIL.Replace("{error}", string.Join(", ", errors)),
                     ErrorType.BusinessRuleViolation);
             }
 
-            _saleRepository.UpdateStatus(saleCode, SaleStatus.Completed);
-            return _saleRepository.GetByCode(saleCode);
+            await _saleRepository.UpdateStatusAsync(saleCode, SaleStatus.Completed);
+            return await _saleRepository.GetByCodeAsync(saleCode);
         }
 
-        public Sale GetSaleByCode(int saleCode) => 
-            _saleRepository.GetByCode(saleCode);
+        public async Task<Sale> GetSaleByCodeAsync(int saleCode) => 
+            await _saleRepository.GetByCodeAsync(saleCode);
 
-        public IEnumerable<Sale> GetAllSales() => 
-            _saleRepository.GetAll();
+        public async Task<IEnumerable<Sale>> GetAllSalesAsync() => 
+            await _saleRepository.GetAllAsync();
 
-        public IEnumerable<Sale> GetSalesByBuyerCPF(int buyerCPF) =>
-            _saleRepository.GetByBuyer(buyerCPF);
+        public async Task<IEnumerable<Sale>> GetSalesByBuyerCPFAsync(int buyerCPF) =>
+            await _saleRepository.GetByBuyerAsync(buyerCPF);
 
-        public IEnumerable<Sale> GetSalesByProductCode(int productCode) =>
-            _saleRepository.GetByProductCode(productCode);
+        public async Task<IEnumerable<Sale>> GetSalesByProductCodeAsync(int productCode) =>
+            await _saleRepository.GetByProductCodeAsync(productCode);
     }
 }

@@ -7,7 +7,9 @@ using Sales.API.Web.DTOs;
 
 namespace Sales.API.Web.Controllers
 {
-    public class SaleController : Controller
+    [ApiController]
+    [Route("api/sales")]
+    public class SaleController : ControllerBase
     {
         private readonly ISaleService _saleService;
 
@@ -16,7 +18,8 @@ namespace Sales.API.Web.Controllers
             _saleService = saleService;
         }
 
-        public IActionResult ProcessSale(SaleDTO saleDTO)
+        [HttpPost("processSale")]
+        public async Task<IActionResult> ProcessSale([FromBody] SaleDTO saleDTO)
         {
             if (saleDTO.BuyerCPF <= 0 || saleDTO.ProductCode <= 0 || saleDTO.SellAmount <= 0)
                     return BadRequest(ErrorMessages.INCORRECTFORMAT);
@@ -24,46 +27,45 @@ namespace Sales.API.Web.Controllers
             var sale = new Sale(saleDTO.BuyerCPF, saleDTO.ProductCode,
                                 saleDTO.SellAmount, SaleStatus.Pending);
 
-            var createdSale = _saleService.Sell(sale);
+            var createdSale = await _saleService.SellAsync(sale);
 
-            return Ok(new
-            {
-                createdSale.Result.ProductCode,
-                createdSale.Result.SellAmount,
-                Status = createdSale.Result.Status.ToString()
-            });
+            return Ok(createdSale);
         }
 
-        public IActionResult GetAllSales()
+        [HttpGet]
+        public async Task<IActionResult> GetAllSales()
         {
-            var sales = _saleService.GetAllSales();
+            var sales = await _saleService.GetAllSalesAsync();
 
             if (!sales.Any()) return NotFound(ErrorMessages.NOSALESFOUND);
 
             return Ok(sales);
         }
 
-        public IActionResult GetSalesByBuyerCPF(int buyerCPF)
+        [HttpGet("buyer/{buyerCPF:int}")]
+        public async Task<IActionResult> GetSalesByBuyerCPF(int buyerCPF)
         {
-            var sales = _saleService.GetSalesByBuyerCPF(buyerCPF);
+            var sales = await _saleService.GetSalesByBuyerCPFAsync(buyerCPF);
 
             if (!sales.Any()) return NotFound(ErrorMessages.NOSALESFOUND);
 
             return Ok(sales);
         }
 
-        public IActionResult GetSalesByProductCode(int productCode)
+        [HttpGet("product/{productCode:int}")]
+        public async Task<IActionResult> GetSalesByProductCode(int productCode)
         {
-            var sales = _saleService.GetSalesByProductCode(productCode);
+            var sales = await _saleService.GetSalesByProductCodeAsync(productCode);
 
             if (!sales.Any()) return NotFound(ErrorMessages.NOSALESFOUND);
 
             return Ok(sales);
         }
 
-        public IActionResult GetByCode(int saleCode)
+        [HttpGet("{saleCode:int}")]
+        public async Task<IActionResult> GetByCode(int saleCode)
         {
-            var sale = _saleService.GetSaleByCode(saleCode);
+            var sale = await _saleService.GetSaleByCodeAsync(saleCode);
 
             if (sale is null) return NotFound(ErrorMessages.SALENOTFOUND);
 
