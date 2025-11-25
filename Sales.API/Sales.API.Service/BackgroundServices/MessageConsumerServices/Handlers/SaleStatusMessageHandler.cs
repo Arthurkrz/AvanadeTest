@@ -3,7 +3,7 @@ using Sales.API.Core.Contracts.Service;
 using Sales.API.Service.RabbitMQ.Shared.Models;
 using System.Text.Json;
 
-namespace Sales.API.Service.RabbitMQ.MessageConsumerServices.Handlers
+namespace Sales.API.Service.BackgroundServices.MessageConsumerServices.Handlers
 {
     public class SaleStatusMessageHandler : IMessageHandler
     {

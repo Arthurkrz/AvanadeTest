@@ -5,14 +5,14 @@ using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Sales.API.Core.Contracts.Handler;
-using Sales.API.Service.RabbitMQ.MessageConsumerServices.Handlers;
+using Sales.API.Service.BackgroundServices.MessageConsumerServices.Handlers;
 using Sales.API.Service.RabbitMQ.Shared.Configurations;
 using Sales.API.Service.RabbitMQ.Shared.Constants;
 using Sales.API.Service.RabbitMQ.Shared.Models;
 using System.Text;
 using System.Text.Json;
 
-namespace Sales.API.Service.RabbitMQ.MessageConsumerServices.BackgroundServices
+namespace Sales.API.Service.BackgroundServices.MessageConsumerServices
 {
     public class ConsumerService : BackgroundService
     {

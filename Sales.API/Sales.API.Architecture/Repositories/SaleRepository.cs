@@ -33,6 +33,16 @@ namespace Sales.API.Architecture.Repositories
             return existingEntity;
         }
 
+        public async Task<List<int>> GetPendingSalesAsync(TimeSpan maxAge)
+        {
+            var threshold = DateTime.UtcNow - maxAge;
+
+            return await _context.Sales
+                .Where(s => s.Status == SaleStatus.Pending && s.CreatedAt <= threshold)
+                .Select(s => s.SaleCode)
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<Sale>> GetAllAsync() =>
             await _context.Set<Sale>().ToListAsync();
 
@@ -50,5 +60,6 @@ namespace Sales.API.Architecture.Repositories
 
         public async Task<bool> IsSaleExistingByCodeAsync(int saleCode) =>
             await _context.Sales.AnyAsync(s => s.SaleCode == saleCode);
+
     }
 }

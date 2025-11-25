@@ -19,6 +19,8 @@ namespace Sales.API.Core.Contracts.Repository
 
         Task<IEnumerable<Sale>> GetByProductCodeAsync(int productCode);
 
+        Task<List<int>> GetPendingSalesAsync(TimeSpan maxAge);
+
         Task<bool> IsSaleExistingByCodeAsync(int saleCode);
     }
 }

@@ -15,8 +15,6 @@ namespace Sales.API.Tests.Integration.Utilities
             {
                 services.RemoveAll<IStockClient>();
                 services.RemoveAll<IIdentityClient>();
-                services.RemoveAll<IConnectionFactory>();
-                services.RemoveAll<IChannel>();
 
                 services.AddSingleton<IStockClient, FakeStockClient>();
                 services.AddSingleton<IIdentityClient, FakeIdentityClient>();

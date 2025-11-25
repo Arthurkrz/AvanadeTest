@@ -30,6 +30,7 @@ builder.Services.InjectRepositories(builder.Configuration);
 builder.Services.InjectHttpClients(builder.Configuration);
 builder.Services.InjectRabbitMQ(builder.Configuration);
 builder.Services.InjectServices();
+builder.Services.InjectWorkers();
 
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();

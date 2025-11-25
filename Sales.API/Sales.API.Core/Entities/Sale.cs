@@ -23,5 +23,7 @@ namespace Sales.API.Core.Entities
         public int SellAmount { get; set; }
 
         public SaleStatus Status { get; set; }
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

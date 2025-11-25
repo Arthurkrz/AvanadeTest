@@ -9,9 +9,10 @@ using Sales.API.Core.Contracts.RabbitMQ;
 using Sales.API.Core.Contracts.Repository;
 using Sales.API.Core.Contracts.Service;
 using Sales.API.Service;
+using Sales.API.Service.BackgroundServices;
+using Sales.API.Service.BackgroundServices.MessageConsumerServices;
+using Sales.API.Service.BackgroundServices.MessageConsumerServices.Handlers;
 using Sales.API.Service.Clients;
-using Sales.API.Service.RabbitMQ.MessageConsumerServices.BackgroundServices;
-using Sales.API.Service.RabbitMQ.MessageConsumerServices.Handlers;
 using Sales.API.Service.RabbitMQ.MessageProducerServices;
 using Sales.API.Service.RabbitMQ.Shared.Configurations;
 
@@ -63,6 +64,13 @@ namespace Sales.API.IOC
             {
                 client.BaseAddress = new Uri(config["Services:IdentityAPI"]!);
             });
+
+            return services;
+        }
+
+        public static IServiceCollection InjectWorkers(this IServiceCollection services)
+        {
+            services.AddHostedService<SaleExpirationWorker>();
 
             return services;
         }

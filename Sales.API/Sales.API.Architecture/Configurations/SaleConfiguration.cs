@@ -22,6 +22,9 @@ namespace Sales.API.Architecture.Configurations
             builder.Property(s => s.Status)
                    .IsRequired();
 
+            builder.Property(s => s.CreatedAt)
+                   .IsRequired();
+
             builder.HasIndex(s => s.ID)
                    .IsUnique();
 

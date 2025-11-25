@@ -4,7 +4,7 @@ using Sales.API.Architecture;
 using Sales.API.Core.Common;
 using Sales.API.Core.Entities;
 using Sales.API.Core.Enum;
-using Sales.API.Service.RabbitMQ.MessageConsumerServices.Handlers;
+using Sales.API.Service.BackgroundServices.MessageConsumerServices.Handlers;
 using Sales.API.Service.RabbitMQ.Shared.Models;
 using Sales.API.Tests.Integration.Utilities;
 using System.Text.Json;
@@ -25,7 +25,6 @@ namespace Sales.API.Tests.Integration
             using var scope = _factory.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<Context>();
             await db.Database.ExecuteSqlRawAsync("TRUNCATE TABLE Sales");
-            await db.SaveChangesAsync();
         } 
 
         [Fact]
