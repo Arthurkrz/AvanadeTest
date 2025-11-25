@@ -7,6 +7,7 @@ using Sales.API.Core.Enum;
 using Sales.API.Tests.Integration.Utilities;
 using Sales.API.Web.DTOs;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
 namespace Sales.API.Tests.Integration
@@ -36,13 +37,19 @@ namespace Sales.API.Tests.Integration
             // Arrange
             await Cleanup();
 
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Add("X-Test-Role", "Buyer");
+
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Test");
+
             using var scope = _factory.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<Context>();
 
             var dto = new SaleDTO() { BuyerCPF = 1, ProductCode = 1, SellAmount = 1 };
 
             // Act
-            var response = await _client.PostAsJsonAsync("/api/sales/processSale", dto);
+            var response = await client.PostAsJsonAsync("/api/sales/processSale", dto);
 
             // Assert
             response.EnsureSuccessStatusCode();
@@ -82,10 +89,16 @@ namespace Sales.API.Tests.Integration
             // Arrange
             await Cleanup();
 
+            var client = _factory.CreateClient();
+            client.DefaultRequestHeaders.Add("X-Test-Role", "Buyer");
+
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Test");
+
             var dto = new SaleDTO() { BuyerCPF = buyerCpf, ProductCode = productCode, SellAmount = sellAmount };
 
             // Act
-            var response = await _client.PostAsJsonAsync("/api/sales/processSale", dto);
+            var response = await client.PostAsJsonAsync("/api/sales/processSale", dto);
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -116,7 +129,7 @@ namespace Sales.API.Tests.Integration
             await db.SaveChangesAsync();
 
             // Act
-            var response = await _client.GetAsync("/api/sales");
+            var response = await _client.GetAsync("/api/sales/all");
 
             // Assert
             response.EnsureSuccessStatusCode();
@@ -134,7 +147,7 @@ namespace Sales.API.Tests.Integration
             await Cleanup();
 
             // Act
-            var response = await _client.GetAsync("/api/sales");
+            var response = await _client.GetAsync("/api/sales/all");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

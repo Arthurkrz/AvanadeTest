@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Sales.API.Core.Common;
 using Sales.API.Core.Contracts.Service;
 using Sales.API.Core.Entities;
@@ -8,6 +9,7 @@ using Sales.API.Web.DTOs;
 namespace Sales.API.Web.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/sales")]
     public class SaleController : ControllerBase
     {
@@ -19,6 +21,7 @@ namespace Sales.API.Web.Controllers
         }
 
         [HttpPost("processSale")]
+        [Authorize(Roles = "Buyer")]
         public async Task<IActionResult> ProcessSale([FromBody] SaleDTO saleDTO)
         {
             if (saleDTO.BuyerCPF <= 0 || saleDTO.ProductCode <= 0 || saleDTO.SellAmount <= 0)
@@ -32,7 +35,8 @@ namespace Sales.API.Web.Controllers
             return Ok(createdSale);
         }
 
-        [HttpGet]
+        [HttpGet("all")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllSales()
         {
             var sales = await _saleService.GetAllSalesAsync();
@@ -43,6 +47,7 @@ namespace Sales.API.Web.Controllers
         }
 
         [HttpGet("buyer/{buyerCPF:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetSalesByBuyerCPF(int buyerCPF)
         {
             var sales = await _saleService.GetSalesByBuyerCPFAsync(buyerCPF);
@@ -53,6 +58,7 @@ namespace Sales.API.Web.Controllers
         }
 
         [HttpGet("product/{productCode:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetSalesByProductCode(int productCode)
         {
             var sales = await _saleService.GetSalesByProductCodeAsync(productCode);
@@ -63,6 +69,7 @@ namespace Sales.API.Web.Controllers
         }
 
         [HttpGet("{saleCode:int}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetByCode(int saleCode)
         {
             var sale = await _saleService.GetSaleByCodeAsync(saleCode);

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -18,6 +19,14 @@ namespace Sales.API.Tests.Integration.Utilities
 
                 services.AddSingleton<IStockClient, FakeStockClient>();
                 services.AddSingleton<IIdentityClient, FakeIdentityClient>();
+
+                services
+                    .AddAuthentication(options =>
+                    {
+                        options.DefaultAuthenticateScheme = "Test";
+                        options.DefaultChallengeScheme = "Test";
+                    })
+                    .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>("Test", options => { });
             });
         }
     }
