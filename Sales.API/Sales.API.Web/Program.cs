@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Sales.API.IOC;
 using Sales.API.Web.Middlewares;
@@ -9,8 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 
 builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+    .AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -20,10 +19,7 @@ builder.Services
             ValidateIssuerSigningKey = true,
 
             ValidIssuer = jwtSettings["Issuer"],
-            ValidAudiences = new[]
-            {
-                jwtSettings["Audiences:test"]
-            },
+            ValidAudiences = jwtSettings.GetSection("Audiences").Get<string[]>(),
 
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
