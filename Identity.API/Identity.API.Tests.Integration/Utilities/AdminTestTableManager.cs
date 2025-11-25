@@ -22,7 +22,7 @@ namespace Identity.API.Tests.Integration.Utilities
         public void Cleanup() =>
             _context.Database.ExecuteSqlRaw("TRUNCATE TABLE Administrators");
 
-        public void InsertAdmin(int numberOfAdminsToInsert = 1)
+        public async Task InsertAdminAsync(int numberOfAdminsToInsert = 1)
         {
             for (int adminNumber = 0; adminNumber < numberOfAdminsToInsert; adminNumber++)
             {
@@ -32,7 +32,7 @@ namespace Identity.API.Tests.Integration.Utilities
                                       $"CPF{adminNumber}", passwordHash, salt,
                                       "Argon2id", "m=65536;i=3;p=1;len=32");
 
-                _adminRepository.Create(admin);
+                await _adminRepository.CreateAsync(admin);
             }
         }
 

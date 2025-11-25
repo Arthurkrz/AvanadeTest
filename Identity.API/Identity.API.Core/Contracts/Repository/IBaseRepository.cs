@@ -2,10 +2,10 @@
 {
     public interface IBaseRepository<T> where T : class
     {
-        T Create(T entity);
+        Task<T> CreateAsync(T entity);
 
-        T GetByUsername(string username);
+        Task<T> GetByUsernameAsync(string username);
 
-        T Update(T entity);
+        Task<T> UpdateAsync(T entity);
     }
 }

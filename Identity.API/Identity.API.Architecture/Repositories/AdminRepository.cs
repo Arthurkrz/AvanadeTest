@@ -1,5 +1,6 @@
 ﻿using Identity.API.Core.Contracts.Repository;
 using Identity.API.Core.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Identity.API.Architecture.Repositories
 {
@@ -12,25 +13,25 @@ namespace Identity.API.Architecture.Repositories
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public Admin Create(Admin admin)
+        public async Task<Admin> CreateAsync(Admin admin)
         {
-            _context.Admins.Add(admin);
-            _context.SaveChanges();
+            await _context.Admins.AddAsync(admin);
+            await _context.SaveChangesAsync();
 
             return admin;
         }
 
-        public Admin GetByUsername(string username) =>
-            _context.Admins.FirstOrDefault(a => a.Username == username)!;
-
-        public Admin Update(Admin admin)
+        public async Task<Admin> UpdateAsync(Admin admin)
         {
-            var existingAdmin = GetByUsername(admin.Username);
+            var existingAdmin = await GetByUsernameAsync(admin.Username);
 
             _context.Entry(existingAdmin!).CurrentValues.SetValues(admin);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return admin;
         }
+
+        public async Task<Admin> GetByUsernameAsync(string username) =>
+            (await _context.Admins.FirstOrDefaultAsync(a => a.Username == username))!;
     }
 }

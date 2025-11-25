@@ -13,17 +13,14 @@ namespace Identity.API.Tests.Services
 {
     public class BuyerServiceTests
     {
-        private readonly Mock<IBaseRepository<Buyer>> _buyerRepositoryMock;
-        private readonly Mock<IPasswordHasher> _passwordHasherMock;
-        private readonly Mock<IValidator<UserRegisterRequest>> _requestValidatorMock;
+        private readonly Mock<IBuyerRepository> _buyerRepositoryMock = new();
+        private readonly Mock<IPasswordHasher> _passwordHasherMock = new();
+        private readonly Mock<IValidator<UserRegisterRequest>> _requestValidatorMock = new();
         private readonly IValidator<UserRegisterRequest> _requestValidator;
         private IBuyerService _sut;
 
         public BuyerServiceTests()
         {
-            _buyerRepositoryMock = new Mock<IBaseRepository<Buyer>>();
-            _passwordHasherMock = new Mock<IPasswordHasher>();
-            _requestValidatorMock = new Mock<IValidator<UserRegisterRequest>>();
             _requestValidator = new UserRegisterRequestValidator();
 
             _sut = new BuyerService(_buyerRepositoryMock.Object,
@@ -32,7 +29,7 @@ namespace Identity.API.Tests.Services
         }
 
         [Fact]
-        public void Login_ShouldReturnTrue_WhenValidCredentials()
+        public async Task LoginAsync_ShouldReturnTrue_WhenValidCredentials()
         {
             // Arrange
             var buyer = new Buyer
@@ -44,19 +41,19 @@ namespace Identity.API.Tests.Services
                 "HashAlgorithm", "HashParams"
             );
 
-            _buyerRepositoryMock.Setup(x => x.GetByUsername(
-                It.IsAny<string>())).Returns(buyer);
+            _buyerRepositoryMock.Setup(x => x.GetByUsernameAsync(
+                It.IsAny<string>())).ReturnsAsync(buyer);
 
             _passwordHasherMock.Setup(x => x.VerifyPassword(
                 It.IsAny<string>(), It.IsAny<byte[]>(),
                 It.IsAny<byte[]>(), It.IsAny<string>())).Returns(true);
 
             // Act & Assert
-            Assert.True(_sut.Login("Username", "Password"));
+            Assert.True(await _sut.LoginAsync("Username", "Password"));
         }
 
         [Fact]
-        public void Login_ShouldReturnFalse_WhenInvalidCredentials()
+        public async Task LoginAsync_ShouldReturnFalse_WhenInvalidCredentials()
         {
             // Arrange
             var buyer = new Buyer
@@ -68,34 +65,34 @@ namespace Identity.API.Tests.Services
                 "HashAlgorithm", "HashParams"
             );
 
-            _buyerRepositoryMock.Setup(x => x.GetByUsername(
-                It.IsAny<string>())).Returns(buyer);
+            _buyerRepositoryMock.Setup(x => x.GetByUsernameAsync(
+                It.IsAny<string>())).ReturnsAsync(buyer);
 
             _passwordHasherMock.Setup(x => x.VerifyPassword(
                 It.IsAny<string>(), It.IsAny<byte[]>(),
                 It.IsAny<byte[]>(), It.IsAny<string>())).Returns(false);
 
             // Act & Assert
-            Assert.False(_sut.Login("Username", "Password"));
+            Assert.False(await _sut.LoginAsync("Username", "Password"));
         }
 
         [Fact]
-        public void Login_ShouldThrowException_WhenBuyerNotFound()
+        public async Task LoginAsync_ShouldThrowException_WhenBuyerNotFound()
         {
             // Arrange
-            _buyerRepositoryMock.Setup(x => x.GetByUsername(
-                It.IsAny<string>())).Returns((Buyer)null!);
+            _buyerRepositoryMock.Setup(x => x.GetByUsernameAsync(
+                It.IsAny<string>())).ReturnsAsync((Buyer)null!);
 
             // Act & Assert
-            var ex = Assert.Throws<IdentityApiException>(() =>
-                _sut.Login("NonExistentUser", "Password"));
+            var ex = await Assert.ThrowsAsync<IdentityApiException>(() =>
+                _sut.LoginAsync("NonExistentUser", "Password"));
 
             Assert.Equal(ErrorMessages.BUYERNOTFOUND, ex.Message);
             Assert.Equal(ErrorType.NotFound, ex.ErrorType);
         }
 
         [Fact]
-        public void Login_ShouldThrowException_WhenAccountIsLocked()
+        public async Task LoginAsync_ShouldThrowException_WhenAccountIsLocked()
         {
             var lockedBuyer = new Buyer
             (
@@ -108,12 +105,12 @@ namespace Identity.API.Tests.Services
 
             lockedBuyer.LockoutEnd = DateTime.UtcNow.AddDays(1).Date;
 
-            _buyerRepositoryMock.Setup(x => x.GetByUsername(
-                It.IsAny<string>())).Returns(lockedBuyer);
+            _buyerRepositoryMock.Setup(x => x.GetByUsernameAsync(
+                It.IsAny<string>())).ReturnsAsync(lockedBuyer);
 
             // Act & Assert
-            var ex = Assert.Throws<IdentityApiException>(() =>
-                _sut.Login("Username", "Password"));
+            var ex = await Assert.ThrowsAsync<IdentityApiException>(() =>
+                _sut.LoginAsync("Username", "Password"));
 
             var expectedErrorMessage = ErrorMessages.LOCKEDACCOUNT
                 .Replace("{lockoutEnd}", lockedBuyer.LockoutEnd.ToString());
@@ -123,7 +120,7 @@ namespace Identity.API.Tests.Services
         }
 
         [Fact]
-        public void Login_ShouldLockAccount_WhenFailedLoginCountExceedsLimit()
+        public async Task LoginAsync_ShouldLockAccount_WhenFailedLoginCountExceedsLimit()
         {
             // Arrange
             var lockedBuyer = new Buyer
@@ -137,22 +134,22 @@ namespace Identity.API.Tests.Services
 
             lockedBuyer.FailedLoginCount = 10;
 
-            _buyerRepositoryMock.Setup(x => x.GetByUsername(
-                It.IsAny<string>())).Returns(lockedBuyer);
+            _buyerRepositoryMock.Setup(x => x.GetByUsernameAsync(
+                It.IsAny<string>())).ReturnsAsync(lockedBuyer);
 
             _passwordHasherMock.Setup(x => x.VerifyPassword(
                 It.IsAny<string>(), It.IsAny<byte[]>(),
                 It.IsAny<byte[]>(), It.IsAny<string>())).Returns(false);
 
             // Act & Assert
-            Assert.False(_sut.Login("Username", "Password"));
+            Assert.False(await _sut.LoginAsync("Username", "Password"));
 
-            _buyerRepositoryMock.Verify(x => x.Update(
+            _buyerRepositoryMock.Verify(x => x.UpdateAsync(
                 It.IsAny<Buyer>()), Times.Once());
         }
 
         [Fact]
-        public void Register_ShouldInvokeRepositoryAddMethod()
+        public async Task RegisterAsync_ShouldInvokeRepositoryAddMethod()
         {
             // Arrange
             _requestValidatorMock.Setup(v => v.Validate(
@@ -167,17 +164,19 @@ namespace Identity.API.Tests.Services
                 ));
 
             // Act
-            _sut.Register(new UserRegisterRequest("Username", "Name", "CPF", "Password",
-                                                  "Email", "PhoneNumber", "DeliveryAddress"));
+            await _sut.RegisterAsync(new UserRegisterRequest("Username", "Name", 
+                                                             "CPF", "Password",
+                                                             "Email", "PhoneNumber", 
+                                                             "DeliveryAddress"));
 
             // Assert
-            _buyerRepositoryMock.Verify(x => x.Create(
+            _buyerRepositoryMock.Verify(x => x.CreateAsync(
                 It.IsAny<Buyer>()), Times.Once());
         }
 
         [Theory]
         [MemberData(nameof(GetInvalidRequests))]
-        public void Register_ShouldThrowExceptionWithErrors_WhenValidationFails(UserRegisterRequest request, IList<string> expectedErrors)
+        public async Task RegisterAsync_ShouldThrowExceptionWithErrors_WhenValidationFails(UserRegisterRequest request, IList<string> expectedErrors)
         {
             // Arrange
             _sut = new BuyerService(_buyerRepositoryMock.Object,
@@ -187,8 +186,8 @@ namespace Identity.API.Tests.Services
             var expectedError = string.Join(", ", expectedErrors);
 
             // Act & Assert
-            var ex = Assert.Throws<IdentityApiException>(() =>
-                _sut.Register(request));
+            var ex = await Assert.ThrowsAsync<IdentityApiException>(() =>
+                _sut.RegisterAsync(request));
 
             var expectedMessage = ErrorMessages.INVALIDREQUEST
                 .Replace("{error}", expectedError);

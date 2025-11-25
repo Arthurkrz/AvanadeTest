@@ -23,7 +23,7 @@ namespace Identity.API.Web.Controllers
 
         [AllowAnonymous]
         [HttpPost("register")]
-        public IActionResult Register(BuyerDTO buyerDTO)
+        public async Task<IActionResult> Register(BuyerDTO buyerDTO)
         {
             var validationResult = _buyerDTOValidator.Validate(buyerDTO);
 
@@ -35,14 +35,14 @@ namespace Identity.API.Web.Controllers
                                                   buyerDTO.Email!, buyerDTO.PhoneNumber!, 
                                                   buyerDTO.DeliveryAddress!);
 
-            var buyer = _buyerService.Register(request);
+            var buyer = await _buyerService.RegisterAsync(request);
 
             return Ok(new { buyer.Username });
         }
 
         [AllowAnonymous]
         [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginRequest loginRequest)
+        public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
         {
             var username = loginRequest.Username;
             var password = loginRequest.Password;
@@ -50,11 +50,16 @@ namespace Identity.API.Web.Controllers
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
                 return BadRequest(ErrorMessages.EMPTYCREDENTIALS);
 
-            var isAuthenticated = _buyerService.Login(username, password);
+            var isAuthenticated = await _buyerService.LoginAsync(username, password);
 
             if (!isAuthenticated) return BadRequest(ErrorMessages.INVALIDCREDENTIALS);
 
             return Ok(username);
         }
+
+        [Authorize(Roles = "SalesAPI")]
+        [HttpGet("exists/{cpf}")]
+        public async Task<bool> Exists(string cpf) =>
+            await _buyerService.IsExistingByCPFAsync(cpf);
     }
 }

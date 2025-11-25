@@ -60,7 +60,7 @@ namespace Identity.API.Tests.Integration
         }
 
         [Fact]
-        public void Register_ShouldCreateAndInsertNewAdmin()
+        public async Task Register_ShouldCreateAndInsertNewAdmin()
         {
             // Arrange
             _adminTestTableManager.Cleanup();
@@ -74,7 +74,7 @@ namespace Identity.API.Tests.Integration
             };
 
             // Act
-            var result = _sut.Register(adminDTO);
+            var result = await _sut.Register(adminDTO);
 
             // Assert
             var ok = Assert.IsType<OkObjectResult>(result);
@@ -87,20 +87,20 @@ namespace Identity.API.Tests.Integration
 
             Assert.Equal("NewAdmin", actual.Username);
 
-            Admin? addedAdmin = _adminRepository.GetByUsername("NewAdmin");
+            Admin? addedAdmin = await _adminRepository.GetByUsernameAsync("NewAdmin");
 
             Assert.NotNull(addedAdmin);
             Assert.Equal(addedAdmin.Username, actual.Username);
         }
 
         [Fact]
-        public void Register_ShouldReturnBadRequest_WhenInvalidAdminDTO()
+        public async Task Register_ShouldReturnBadRequest_WhenInvalidAdminDTO()
         {
             // Arrange
             _adminTestTableManager.Cleanup();
 
             // Act
-            var result = _sut.Register(new AdminDTO());
+            var result = await _sut.Register(new AdminDTO());
 
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
@@ -113,16 +113,16 @@ namespace Identity.API.Tests.Integration
         }
 
         [Fact]
-        public void Login_ShouldReturnOk_WhenValidCredentials()
+        public async Task Login_ShouldReturnOk_WhenValidCredentials()
         {
             // Arrange
             _adminTestTableManager.Cleanup();
-            _adminTestTableManager.InsertAdmin();
+            await _adminTestTableManager.InsertAdminAsync();
             var loginRequest = new LoginRequest
             { Password = "Password0", Username = "Username0" };
 
             // Act
-            var result = _sut.Login(loginRequest);
+            var result = await _sut.Login(loginRequest);
 
             // Assert
             var ok = Assert.IsType<OkObjectResult>(result);
@@ -130,14 +130,14 @@ namespace Identity.API.Tests.Integration
         }
 
         [Fact]
-        public void Login_ShouldReturnBadRequest_WhenEmptyCredentials()
+        public async Task Login_ShouldReturnBadRequest_WhenEmptyCredentials()
         {
             // Arrange
             _adminTestTableManager.Cleanup();
             var loginRequest = new LoginRequest { Password = "", Username = "" };
 
             // Act
-            var result = _sut.Login(loginRequest);
+            var result = await _sut.Login(loginRequest);
 
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
@@ -145,16 +145,16 @@ namespace Identity.API.Tests.Integration
         }
 
         [Fact]
-        public void Login_ShouldReturnBadRequest_WhenInvalidCredentials()
+        public async Task Login_ShouldReturnBadRequest_WhenInvalidCredentials()
         {
             // Arrange
             _adminTestTableManager.Cleanup();
-            _adminTestTableManager.InsertAdmin();
+            await _adminTestTableManager.InsertAdminAsync();
             var loginRequest = new LoginRequest
             { Password = "WrongPassword", Username = "Username0" };
 
             // Act
-            var result = _sut.Login(loginRequest);
+            var result = await _sut.Login(loginRequest);
 
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);

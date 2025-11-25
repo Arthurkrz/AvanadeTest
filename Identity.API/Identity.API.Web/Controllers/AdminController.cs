@@ -23,7 +23,7 @@ public class AdminController : Controller
 
     [AllowAnonymous]
     [HttpPost("register")]
-    public IActionResult Register(AdminDTO adminDTO)
+    public async Task<IActionResult> Register(AdminDTO adminDTO)
     {
         var validationResult = _adminDTOValidator.Validate(adminDTO);
 
@@ -33,14 +33,14 @@ public class AdminController : Controller
         var request = new AdminRegisterRequest(adminDTO.Username!, adminDTO.Name!,
                                                adminDTO.CPF!, adminDTO.Password!);
 
-        var admin = _adminService.Register(request);
+        var admin = await _adminService.RegisterAsync(request);
 
         return Ok(new { admin.Username });
     }
 
     [AllowAnonymous]
     [HttpPost("login")]
-    public IActionResult Login([FromBody] LoginRequest loginRequest)
+    public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
     {
         var username = loginRequest.Username;
         var password = loginRequest.Password;
@@ -48,7 +48,7 @@ public class AdminController : Controller
         if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             return BadRequest(ErrorMessages.EMPTYCREDENTIALS);
 
-        var isAuthenticated = _adminService.Login(username, password);
+        var isAuthenticated = await _adminService.LoginAsync(username, password);
 
         if (!isAuthenticated) return BadRequest(ErrorMessages.INVALIDCREDENTIALS);
 

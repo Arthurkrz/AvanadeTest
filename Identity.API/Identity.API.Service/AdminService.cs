@@ -21,9 +21,9 @@ namespace Identity.API.Service
             _requestValidator = requestValidator;
         }
 
-        public bool Login(string username, string password)
+        public async Task<bool> LoginAsync(string username, string password)
         {
-            var admin = _adminRepository.GetByUsername(username);
+            var admin = await _adminRepository.GetByUsernameAsync(username);
 
             if (admin is null) throw new IdentityApiException(ErrorMessages.ADMINNOTFOUND,
                                                               ErrorType.NotFound);
@@ -45,18 +45,18 @@ namespace Identity.API.Service
                     admin.FailedLoginCount = 0;
                 }
 
-                _adminRepository.Update(admin);
+                await _adminRepository.UpdateAsync(admin);
                 return false;
             }
 
             admin.FailedLoginCount = 0;
             admin.LockoutEnd = null;
 
-            _adminRepository.Update(admin);
+            await _adminRepository.UpdateAsync(admin);
             return true;
         }
 
-        public Admin Register(AdminRegisterRequest request)
+        public async Task<Admin> RegisterAsync(AdminRegisterRequest request)
         {
             var validationResult = _requestValidator.Validate(request);
 
@@ -70,11 +70,11 @@ namespace Identity.API.Service
                                   request.CPF, hash, salt,
                                   "Argon2id", hashParams);
 
-            _adminRepository.Create(admin);
+            await _adminRepository.CreateAsync(admin);
             return admin;
         }
 
-        public Admin GetByUsername(string username) =>
-            _adminRepository.GetByUsername(username);
+        public async Task<Admin> GetByUsernameAsync(string username) =>
+            await _adminRepository.GetByUsernameAsync(username);
     }
 }

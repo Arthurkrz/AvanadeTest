@@ -27,7 +27,7 @@ namespace Identity.API.Tests.Integration
         private readonly IValidator<BuyerDTO> _buyerDTOValidator;
 
         private readonly IBuyerService _buyerService;
-        private readonly IBaseRepository<Buyer> _buyerRepository;
+        private readonly IBuyerRepository _buyerRepository;
 
         public BuyerControllerIntegrationTests()
         {
@@ -53,14 +53,14 @@ namespace Identity.API.Tests.Integration
             _context = _serviceProvider.GetRequiredService<Context>();
             _buyerDTOValidator = _serviceProvider.GetRequiredService<IValidator<BuyerDTO>>();
             _buyerService = _serviceProvider.GetRequiredService<IBuyerService>();
-            _buyerRepository = _serviceProvider.GetRequiredService<IBaseRepository<Buyer>>();
+            _buyerRepository = _serviceProvider.GetRequiredService<IBuyerRepository>();
 
             _buyerTestTableManager = new BuyerTestTableManager(_context, _buyerRepository);
             _sut = new BuyerController(_buyerService, _buyerDTOValidator);
         }
 
         [Fact]
-        public void Register_ShouldCreateAndInsertNewBuyer()
+        public async Task Register_ShouldCreateAndInsertNewBuyer()
         {
             // Arrange
             _buyerTestTableManager.Cleanup();
@@ -77,7 +77,7 @@ namespace Identity.API.Tests.Integration
             };
 
             // Act
-            var result = _sut.Register(buyerDTO);
+            var result = await _sut.Register(buyerDTO);
 
             // Assert
             var ok = Assert.IsType<OkObjectResult>(result);
@@ -90,20 +90,20 @@ namespace Identity.API.Tests.Integration
 
             Assert.Equal("NewBuyer", actual.Username);
 
-            Buyer? addedBuyer = _buyerRepository.GetByUsername("NewBuyer");
+            Buyer? addedBuyer = await _buyerRepository.GetByUsernameAsync("NewBuyer");
 
             Assert.NotNull(addedBuyer);
             Assert.Equal(addedBuyer.Username, actual.Username);
         }
 
         [Fact]
-        public void Register_ShouldReturnBadRequest_WhenInvalidBuyerDTO()
+        public async Task Register_ShouldReturnBadRequest_WhenInvalidBuyerDTO()
         {
             // Arrange
             _buyerTestTableManager.Cleanup();
 
             // Act
-            var result = _sut.Register(new BuyerDTO());
+            var result = await _sut.Register(new BuyerDTO());
 
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
@@ -119,16 +119,16 @@ namespace Identity.API.Tests.Integration
         }
 
         [Fact]
-        public void Login_ShouldReturnOk_WhenValidCredentials()
+        public async Task Login_ShouldReturnOk_WhenValidCredentials()
         {
             // Arrange
             _buyerTestTableManager.Cleanup();
-            _buyerTestTableManager.InsertBuyer();
+            await _buyerTestTableManager.InsertBuyerAsync();
             var loginRequest = new LoginRequest
             { Password = "Password0", Username = "Username0" };
 
             // Act
-            var result = _sut.Login(loginRequest);
+            var result = await _sut.Login(loginRequest);
 
             // Assert
             var ok = Assert.IsType<OkObjectResult>(result);
@@ -136,14 +136,14 @@ namespace Identity.API.Tests.Integration
         }
 
         [Fact]
-        public void Login_ShouldReturnBadRequest_WhenEmptyCredentials()
+        public async Task Login_ShouldReturnBadRequest_WhenEmptyCredentials()
         {
             // Arrange
             _buyerTestTableManager.Cleanup();
             var loginRequest = new LoginRequest { Password = "", Username = "" };
 
             // Act
-            var result = _sut.Login(loginRequest);
+            var result = await _sut.Login(loginRequest);
 
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
@@ -151,16 +151,16 @@ namespace Identity.API.Tests.Integration
         }
 
         [Fact]
-        public void Login_ShouldReturnBadRequest_WhenInvalidCredentials()
+        public async Task Login_ShouldReturnBadRequest_WhenInvalidCredentials()
         {
             // Arrange
             _buyerTestTableManager.Cleanup();
-            _buyerTestTableManager.InsertBuyer();
+            await _buyerTestTableManager.InsertBuyerAsync();
             var loginRequest = new LoginRequest
             { Password = "WrongPassword", Username = "Username0" };
 
             // Act
-            var result = _sut.Login(loginRequest);
+            var result = await _sut.Login(loginRequest);
 
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);

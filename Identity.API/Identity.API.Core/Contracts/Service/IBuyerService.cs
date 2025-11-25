@@ -5,10 +5,12 @@ namespace Identity.API.Core.Contracts.Service
 {
     public interface IBuyerService
     {
-        Buyer Register(UserRegisterRequest request);
+        Task<Buyer> RegisterAsync(UserRegisterRequest request);
 
-        bool Login(string username, string password);
+        Task<bool> LoginAsync(string username, string password);
 
-        Buyer GetByUsername(string username);
+        Task<Buyer> GetByUsernameAsync(string username);
+
+        Task<bool> IsExistingByCPFAsync(string cpf);
     }
 }

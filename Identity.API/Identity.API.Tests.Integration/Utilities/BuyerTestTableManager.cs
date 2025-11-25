@@ -11,9 +11,9 @@ namespace Identity.API.Tests.Integration.Utilities
     public class BuyerTestTableManager
     {
         private readonly Context _context;
-        private readonly IBaseRepository<Buyer> _buyerRepository;
+        private readonly IBuyerRepository _buyerRepository;
 
-        public BuyerTestTableManager(Context context, IBaseRepository<Buyer> buyerRepository)
+        public BuyerTestTableManager(Context context, IBuyerRepository buyerRepository)
         {
             _context = context;
             _buyerRepository = buyerRepository;
@@ -22,7 +22,7 @@ namespace Identity.API.Tests.Integration.Utilities
         public void Cleanup() =>
             _context.Database.ExecuteSqlRaw("TRUNCATE TABLE Buyers");
 
-        public void InsertBuyer(int numberOfBuyersToInsert = 1)
+        public async Task InsertBuyerAsync(int numberOfBuyersToInsert = 1)
         {
             for (int buyerNumber = 0; buyerNumber < numberOfBuyersToInsert; buyerNumber++)
             {
@@ -33,7 +33,7 @@ namespace Identity.API.Tests.Integration.Utilities
                                       $"DeliveryAddress{buyerNumber}", passwordHash, salt,
                                       "Argon2id", "m=65536;i=3;p=1;len=32");
 
-                _buyerRepository.Create(buyer);
+                await _buyerRepository.CreateAsync(buyer);
             }
         }
 

@@ -32,7 +32,7 @@ namespace Identity.API.Tests.Services
         }
 
         [Fact]
-        public void Login_ShouldReturnTrue_WhenValidCredentials()
+        public async Task LoginAsync_ShouldReturnTrue_WhenValidCredentials()
         {
             // Arrange
             var admin = new Admin
@@ -43,19 +43,19 @@ namespace Identity.API.Tests.Services
                 "HashAlgorithm", "HashParams"
             );
 
-            _adminRepositoryMock.Setup(x => x.GetByUsername(
-                It.IsAny<string>())).Returns(admin);
+            _adminRepositoryMock.Setup(x => x.GetByUsernameAsync(
+                It.IsAny<string>())).ReturnsAsync(admin);
 
             _passwordHasherMock.Setup(x => x.VerifyPassword(
                 It.IsAny<string>(), It.IsAny<byte[]>(),
                 It.IsAny<byte[]>(), It.IsAny<string>())).Returns(true);
 
             // Act & Assert
-            Assert.True(_sut.Login("Username", "Password"));
+            Assert.True(await _sut.LoginAsync("Username", "Password"));
         }
 
         [Fact]
-        public void Login_ShouldReturnFalse_WhenInvalidCredentials()
+        public async Task LoginAsync_ShouldReturnFalse_WhenInvalidCredentials()
         {
             // Arrange
             var admin = new Admin
@@ -66,34 +66,34 @@ namespace Identity.API.Tests.Services
                 "HashAlgorithm", "HashParams"
             );
 
-            _adminRepositoryMock.Setup(x => x.GetByUsername(
-                It.IsAny<string>())).Returns(admin);
+            _adminRepositoryMock.Setup(x => x.GetByUsernameAsync(
+                It.IsAny<string>())).ReturnsAsync(admin);
 
             _passwordHasherMock.Setup(x => x.VerifyPassword(
                 It.IsAny<string>(), It.IsAny<byte[]>(),
                 It.IsAny<byte[]>(), It.IsAny<string>())).Returns(false);
 
             // Act & Assert
-            Assert.False(_sut.Login("Username", "Password"));
+            Assert.False(await _sut.LoginAsync("Username", "Password"));
         }
 
         [Fact]
-        public void Login_ShouldThrowException_WhenAdminNotFound()
+        public async Task LoginAsync_ShouldThrowException_WhenAdminNotFound()
         {
             // Arrange
-            _adminRepositoryMock.Setup(x => x.GetByUsername(
-                It.IsAny<string>())).Returns((Admin)null!);
+            _adminRepositoryMock.Setup(x => x.GetByUsernameAsync(
+                It.IsAny<string>())).ReturnsAsync((Admin)null!);
 
             // Act & Assert
-            var ex = Assert.Throws<IdentityApiException>(() =>
-                _sut.Login("Username", "Password"));
+            var ex = await Assert.ThrowsAsync<IdentityApiException>(() =>
+                _sut.LoginAsync("Username", "Password"));
 
             Assert.Equal(ErrorMessages.ADMINNOTFOUND, ex.Message);
             Assert.Equal(ErrorType.NotFound, ex.ErrorType);
         }
 
         [Fact]
-        public void Login_ShouldThrowException_WhenAccountIsLocked()
+        public async Task LoginAsync_ShouldThrowException_WhenAccountIsLocked()
         {
             // Arrange
             var lockedAdmin = new Admin
@@ -106,12 +106,12 @@ namespace Identity.API.Tests.Services
 
             lockedAdmin.LockoutEnd = DateTime.UtcNow.AddDays(1).Date;
 
-            _adminRepositoryMock.Setup(x => x.GetByUsername(
-                It.IsAny<string>())).Returns(lockedAdmin);
+            _adminRepositoryMock.Setup(x => x.GetByUsernameAsync(
+                It.IsAny<string>())).ReturnsAsync(lockedAdmin);
 
             // Act & Assert
-            var ex = Assert.Throws<IdentityApiException>(() =>
-                _sut.Login("Username", "Password"));
+            var ex = await Assert.ThrowsAsync<IdentityApiException>(() =>
+                _sut.LoginAsync("Username", "Password"));
 
             var expectedErrorMessage = ErrorMessages.LOCKEDACCOUNT
                 .Replace("{lockoutEnd}", lockedAdmin.LockoutEnd.ToString());
@@ -121,7 +121,7 @@ namespace Identity.API.Tests.Services
         }
 
         [Fact]
-        public void Login_ShouldLockAccount_WhenFailedLoginCountExceedsLimit()
+        public async Task LoginAsync_ShouldLockAccount_WhenFailedLoginCountExceedsLimit()
         {
             // Arrange
             var lockedAdmin = new Admin
@@ -134,22 +134,22 @@ namespace Identity.API.Tests.Services
 
             lockedAdmin.FailedLoginCount = 10;
 
-            _adminRepositoryMock.Setup(x => x.GetByUsername(
-                It.IsAny<string>())).Returns(lockedAdmin);
+            _adminRepositoryMock.Setup(x => x.GetByUsernameAsync(
+                It.IsAny<string>())).ReturnsAsync(lockedAdmin);
 
             _passwordHasherMock.Setup(x => x.VerifyPassword(
                 It.IsAny<string>(), It.IsAny<byte[]>(),
                 It.IsAny<byte[]>(), It.IsAny<string>())).Returns(false);
 
             // Act & Assert
-            Assert.False(_sut.Login("Username", "Password"));
+            Assert.False(await _sut.LoginAsync("Username", "Password"));
 
-            _adminRepositoryMock.Verify(x => x.Update(
+            _adminRepositoryMock.Verify(x => x.UpdateAsync(
                 It.IsAny<Admin>()), Times.Once());
         }
 
         [Fact]
-        public void Register_ShouldInvokeRepositoryAddMethod()
+        public async Task RegisterAsync_ShouldInvokeRepositoryAddMethod()
         {
             // Arrange
             _requestValidatorMock.Setup(x => x.Validate(
@@ -164,16 +164,16 @@ namespace Identity.API.Tests.Services
                 ));
 
             // Act
-            _sut.Register(new AdminRegisterRequest("Username", "Name", "CPF", "Password"));
+            await _sut.RegisterAsync(new AdminRegisterRequest("Username", "Name", "CPF", "Password"));
 
             // Assert
-            _adminRepositoryMock.Verify(x => x.Create(
+            _adminRepositoryMock.Verify(x => x.CreateAsync(
                 It.IsAny<Admin>()), Times.Once());
         }
 
         [Theory]
         [MemberData(nameof(GetInvalidRequests))]
-        public void Register_ShouldThrowExceptionWithErrors_WhenValidationFails(AdminRegisterRequest request, IList<string> expectedErrors)
+        public async Task RegisterAsync_ShouldThrowExceptionWithErrors_WhenValidationFails(AdminRegisterRequest request, IList<string> expectedErrors)
         {
             // Arrange
             _sut = new AdminService(_adminRepositoryMock.Object,
@@ -183,8 +183,8 @@ namespace Identity.API.Tests.Services
             var expectedError = string.Join(", ", expectedErrors);
 
             // Act & Assert
-            var ex = Assert.Throws<IdentityApiException>(() =>
-                _sut.Register(request));
+            var ex = await Assert.ThrowsAsync<IdentityApiException>(() =>
+                _sut.RegisterAsync(request));
 
             var expectedMessage = ErrorMessages.INVALIDREQUEST
                 .Replace("{error}", expectedError);

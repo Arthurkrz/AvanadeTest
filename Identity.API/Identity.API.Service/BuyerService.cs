@@ -9,21 +9,21 @@ namespace Identity.API.Service
 {
     public class BuyerService : IBuyerService
     {
-        private readonly IBaseRepository<Buyer> _buyerRepository;
+        private readonly IBuyerRepository _buyerRepository;
         private readonly IPasswordHasher _passwordHasher;
 
         private readonly IValidator<UserRegisterRequest> _requestValidator;
 
-        public BuyerService(IBaseRepository<Buyer> buyerRepository, IPasswordHasher passwordHasher, IValidator<UserRegisterRequest> requestValidator)
+        public BuyerService(IBuyerRepository buyerRepository, IPasswordHasher passwordHasher, IValidator<UserRegisterRequest> requestValidator)
         {
             _buyerRepository = buyerRepository;
             _passwordHasher = passwordHasher;
             _requestValidator = requestValidator;
         }
 
-        public bool Login(string username, string password)
+        public async Task<bool> LoginAsync(string username, string password)
         {
-            var buyer = _buyerRepository.GetByUsername(username);
+            var buyer = await _buyerRepository.GetByUsernameAsync(username);
 
             if (buyer is null) throw new IdentityApiException(ErrorMessages.BUYERNOTFOUND,
                                                               ErrorType.NotFound);
@@ -45,18 +45,18 @@ namespace Identity.API.Service
                     buyer.FailedLoginCount = 0;
                 }
 
-                _buyerRepository.Update(buyer);
+                await _buyerRepository.UpdateAsync(buyer);
                 return false;
             }
 
             buyer.FailedLoginCount = 0;
             buyer.LockoutEnd = null;
 
-            _buyerRepository.Update(buyer);
+            await _buyerRepository.UpdateAsync(buyer);
             return true;
         }
 
-        public Buyer Register(UserRegisterRequest request)
+        public async Task<Buyer> RegisterAsync(UserRegisterRequest request)
         {
             var validationResult = _requestValidator.Validate(request);
 
@@ -71,11 +71,14 @@ namespace Identity.API.Service
                                   request.DeliveryAddress, hash, 
                                   salt, "Argon2id", hashParams);
 
-            _buyerRepository.Create(buyer);
+            await _buyerRepository.CreateAsync(buyer);
             return buyer;
         }
 
-        public Buyer GetByUsername(string username) =>
-            _buyerRepository.GetByUsername(username);
+        public async Task<Buyer> GetByUsernameAsync(string username) =>
+            await _buyerRepository.GetByUsernameAsync(username);
+
+        public async Task<bool> IsExistingByCPFAsync(string cpf) =>
+            await _buyerRepository.IsExistingByCPFAsync(cpf);
     }
 }

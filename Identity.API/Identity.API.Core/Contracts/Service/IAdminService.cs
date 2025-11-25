@@ -5,10 +5,10 @@ namespace Identity.API.Core.Contracts.Service
 {
     public interface IAdminService
     {
-        Admin Register(AdminRegisterRequest request);
+        Task<Admin> RegisterAsync(AdminRegisterRequest request);
 
-        bool Login(string username, string password);
+        Task<bool> LoginAsync(string username, string password);
 
-        Admin GetByUsername(string username);
+        Task<Admin> GetByUsernameAsync(string username);
     }
 }

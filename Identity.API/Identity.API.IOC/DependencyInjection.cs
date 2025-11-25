@@ -30,7 +30,7 @@ namespace Identity.API.IOC
                 options.UseSqlServer(config.GetConnectionString("DefaultConnection")));
 
             services.AddScoped<IBaseRepository<Admin>, AdminRepository>();
-            services.AddScoped<IBaseRepository<Buyer>, BuyerRepository>();
+            services.AddScoped<IBuyerRepository, BuyerRepository>();
 
             return services;
         }
