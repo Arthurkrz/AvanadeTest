@@ -14,6 +14,8 @@ namespace Stock.API.Core.Contracts.Service
 
         Task<Product> GetByCodeAsync(int productCode);
 
+        Task<bool> IsExistingByCodeAsync(int productCode);
+
         Task<IEnumerable<Product>> GetAllAsync();
     }
 }

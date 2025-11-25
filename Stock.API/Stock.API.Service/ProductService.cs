@@ -82,10 +82,13 @@ namespace Stock.API.Service
             return deletedProduct;
         }
 
-        public async Task<Product> GetByCodeAsync(int ProductCode) =>
-            await _productRepository.GetByCodeAsync(ProductCode);
+        public async Task<Product> GetByCodeAsync(int productCode) =>
+            await _productRepository.GetByCodeAsync(productCode);
 
         public async Task<IEnumerable<Product>> GetAllAsync() => 
             await _productRepository.GetAllAsync();
+
+        public async Task<bool> IsExistingByCodeAsync(int productCode) => 
+            await _productRepository.IsExistingByCodeAsync(productCode);
     }
 }

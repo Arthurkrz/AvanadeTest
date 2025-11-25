@@ -94,4 +94,9 @@ public class ProductController : ControllerBase
 
         return Ok(product);
     }
+
+    [Authorize(Roles = "Admin,SalesAPI")]
+    [HttpGet("exists/{productCode}")]
+    public async Task<bool> Exists(int productCode) => 
+        await _productService.IsExistingByCodeAsync(productCode);
 }

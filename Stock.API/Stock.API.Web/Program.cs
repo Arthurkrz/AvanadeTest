@@ -1,6 +1,5 @@
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Stock.API.Core.Entities;
 using Stock.API.Core.Validators;
@@ -15,8 +14,8 @@ var builder = WebApplication.CreateBuilder(args);
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 
 builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+    .AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -26,10 +25,7 @@ builder.Services
             ValidateIssuerSigningKey = true,
 
             ValidIssuer = jwtSettings["Issuer"],
-            ValidAudiences = new[]
-            {
-                jwtSettings["Audiences:SellsAPI"]
-            },
+            ValidAudiences = jwtSettings.GetSection("Audiences").Get<string[]>(),
 
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
