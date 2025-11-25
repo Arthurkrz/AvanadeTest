@@ -22,7 +22,7 @@ namespace Stock.API.Service
             _producerService = producerService;
         }
 
-        public Product Create(Product product)
+        public async Task<Product> CreateAsync(Product product)
         {
             var validationResult = _productValidator.Validate(product);
 
@@ -31,60 +31,61 @@ namespace Stock.API.Service
                 ErrorType.BusinessRuleViolation);
 
             do product.Code = _random.Next(1, 10000);
-            while (_productRepository.GetByCode(product.Code) is not null);
+            while (await _productRepository.IsExistingByCodeAsync(product.Code));
 
-            return _productRepository.Create(product);
+            return await _productRepository.CreateAsync(product);
         }
 
-        public void UpdateStock(int saleCode, int productCode, int sellAmount)
+        public async Task UpdateStockAsync(int saleCode, int productCode, int sellAmount)
         {
-            var product = _productRepository.GetByCode(productCode);
+            var product = await _productRepository.GetByCodeAsync(productCode);
 
             if (product is null) 
             {
-                _producerService.PublishSaleProcessed(
+                await _producerService.PublishSaleProcessedAsync(
                 saleCode, productCode, [ErrorMessages.PRODUCTNOTFOUND]);
 
                 return;
             }
 
-            if (sellAmount > product!.AmountInStock) _producerService.PublishSaleProcessed(
+            if (sellAmount > product!.AmountInStock) 
+                await _producerService.PublishSaleProcessedAsync(
                 saleCode, productCode, [ErrorMessages.NOTENOUGHSTOCK]);
 
             int newAmountInStock = product.AmountInStock - sellAmount;
 
-            _productRepository.UpdateStock(productCode, newAmountInStock);
-            _producerService.PublishSaleProcessed(saleCode, productCode);
+            await _productRepository.UpdateStockAsync(productCode, newAmountInStock);
+            await _producerService.PublishSaleProcessedAsync(saleCode, productCode);
         }
 
-        public Product UpdateProduct(int productCode, Product product)
+        public async Task<Product> UpdateProductAsync(int productCode, Product product)
         {
             var validationResult = _productValidator.Validate(product);
 
-            if (_productRepository.GetByCode(productCode) is null)
+            if (!await _productRepository.IsExistingByCodeAsync(productCode))
                 throw new StockApiException(ErrorMessages.PRODUCTNOTFOUND, ErrorType.NotFound);
 
             if (!validationResult.IsValid) throw new StockApiException(ErrorMessages.INVALIDREQUEST
                 .Replace("{error}", string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage))), 
                 ErrorType.BusinessRuleViolation);
 
-            return _productRepository.UpdateProduct(productCode, product);
+            return await _productRepository.UpdateProductAsync(productCode, product);
         }
 
-        public Product DeleteProduct(int productCode)
+        public async Task<Product> DeleteProductAsync(int productCode)
         {
-            if (_productRepository.GetByCode(productCode) is null)
+            if (await _productRepository.GetByCodeAsync(productCode) is null)
                 throw new StockApiException(ErrorMessages.PRODUCTNOTFOUND, ErrorType.NotFound);
 
-            var deletedProduct = _productRepository.Delete(productCode);
+            var deletedProduct = await _productRepository.DeleteAsync(productCode);
 
             return deletedProduct;
         }
 
-        public Product GetByCode(int ProductCode) =>
-            _productRepository.GetByCode(ProductCode);
+        public async Task<Product> GetByCodeAsync(int ProductCode) =>
+            await _productRepository.GetByCodeAsync(ProductCode);
 
-        public IEnumerable<Product> GetAll() => 
-            _productRepository.GetAll();
+        public async Task<IEnumerable<Product>> GetAllAsync() => 
+            await _productRepository.GetAllAsync();
     }
 }

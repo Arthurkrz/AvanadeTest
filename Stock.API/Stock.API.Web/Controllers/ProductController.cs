@@ -24,7 +24,7 @@ public class ProductController : ControllerBase
 
     [Authorize(Roles = "Admin")]
     [HttpPost]
-    public IActionResult Create([FromBody] ProductDTO productDTO)
+    public async Task<IActionResult> Create([FromBody] ProductDTO productDTO)
     {
         var validationResult = _productDTOValidator.Validate(productDTO);
 
@@ -34,14 +34,14 @@ public class ProductController : ControllerBase
                                  (decimal)productDTO.Price!, 
                                  (int)productDTO.AmountInStock!);
 
-        var createdProduct = _productService.Create(product);
+        var createdProduct = await _productService.CreateAsync(product);
         
         return Ok(createdProduct);
     }
 
     [Authorize(Roles = "Admin")]
     [HttpPut("update/{id:guid}")]
-    public IActionResult Update(int productCode, [FromBody] ProductDTO productDTO)
+    public async Task<IActionResult> Update(int productCode, [FromBody] ProductDTO productDTO)
     {
         if (productCode <= 0) return BadRequest(ErrorMessages.INCORRECTFORMAT);
 
@@ -56,27 +56,27 @@ public class ProductController : ControllerBase
             (int)productDTO.AmountInStock!
         );
 
-        var updatedProduct = _productService.UpdateProduct(productCode, product);
+        var updatedProduct = await _productService.UpdateProductAsync(productCode, product);
 
         return Ok(updatedProduct);
     }
 
     [Authorize(Roles = "Admin")]
     [HttpDelete("{id:guid}")]
-    public IActionResult Delete(int productCode)
+    public async Task<IActionResult> Delete(int productCode)
     {
         if (productCode <= 0) return BadRequest(ErrorMessages.INCORRECTFORMAT);
 
-        var deletedProduct = _productService.DeleteProduct(productCode);
+        var deletedProduct = await _productService.DeleteProductAsync(productCode);
 
         return Ok(new { deletedProduct.ID, deletedProduct.Name });
     }
 
     [Authorize(Roles = "Admin,SalesAPI")]
     [HttpGet]
-    public IActionResult GetAll()
+    public async Task<IActionResult> GetAll()
     {
-        var products = _productService.GetAll();
+        var products = await _productService.GetAllAsync();
 
         if (!products.Any()) return BadRequest(ErrorMessages.NOPRODUCTSFOUND);
 
@@ -84,11 +84,11 @@ public class ProductController : ControllerBase
     }
 
     [Authorize(Roles = "Admin,SalesAPI")]
-    public IActionResult GetByCode(int productCode)
+    public async Task<IActionResult> GetByCode(int productCode)
     {
         if (productCode <= 0) return BadRequest(ErrorMessages.INCORRECTFORMAT);
 
-        var product = _productService.GetByCode(productCode);
+        var product = await _productService.GetByCodeAsync(productCode);
 
         if (product is null) return NotFound(ErrorMessages.PRODUCTNOTFOUND);
 

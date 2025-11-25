@@ -2,6 +2,6 @@
 {
     public interface IProducerService
     {
-        Task PublishSaleProcessed(int saleCode, int productCode, IList<string> errors = null!);
+        Task PublishSaleProcessedAsync(int saleCode, int productCode, IList<string> errors = null!);
     }
 }

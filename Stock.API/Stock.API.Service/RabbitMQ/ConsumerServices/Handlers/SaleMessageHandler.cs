@@ -17,7 +17,7 @@ namespace Stock.API.Service.RabbitMQ.ConsumerServices.Handlers
         public async Task HandleAsync(string messageJson)
         {
             var message = JsonSerializer.Deserialize<ProductSaleDTO>(messageJson);
-            _productService.UpdateStock(message!.SaleCode, message!.ProductCode, message.SoldAmount);
+            await _productService.UpdateStockAsync(message!.SaleCode, message!.ProductCode, message.SoldAmount);
         }
     }
 }

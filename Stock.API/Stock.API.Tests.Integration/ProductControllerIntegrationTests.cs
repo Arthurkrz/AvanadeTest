@@ -1,5 +1,6 @@
-﻿using FluentValidation;
-using FluentAssertions;
+﻿using FluentAssertions;
+using FluentValidation;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -9,13 +10,11 @@ using Stock.API.Core.Common;
 using Stock.API.Core.Contracts.Repository;
 using Stock.API.Core.Contracts.Service;
 using Stock.API.Core.Entities;
-using Stock.API.Core.Validators;
 using Stock.API.IOC;
 using Stock.API.Tests.Integration.Utilities;
 using Stock.API.Web.DTOs;
 using Stock.API.Web.Validators;
 using StockAPI.Controllers;
-using FluentValidation.Results;
 
 namespace Stock.API.Tests.Integration
 {
@@ -27,7 +26,6 @@ namespace Stock.API.Tests.Integration
         private readonly Context _context;
 
         private readonly IValidator<ProductDTO> _productDTOValidator;
-        private readonly IValidator<Product> _productValidator;
 
         private readonly IProductRepository _productRepository;
         private readonly IProductService _productService;
@@ -42,7 +40,6 @@ namespace Stock.API.Tests.Integration
             ServiceCollection services = new();
 
             services.AddValidatorsFromAssemblyContaining<ProductDTOValidator>();
-            services.AddValidatorsFromAssemblyContaining<ProductValidator>();
 
             services.InjectRepositories(config);
             services.InjectRabbitMQ(config);
@@ -56,7 +53,6 @@ namespace Stock.API.Tests.Integration
 
             _context = _serviceProvider.GetRequiredService<Context>();
             _productDTOValidator = _serviceProvider.GetRequiredService<IValidator<ProductDTO>>();
-            _productValidator = _serviceProvider.GetRequiredService<IValidator<Product>>();
             _productRepository = _serviceProvider.GetRequiredService<IProductRepository>();
             _productService = _serviceProvider.GetRequiredService<IProductService>();
 
@@ -65,7 +61,7 @@ namespace Stock.API.Tests.Integration
         }
 
         [Fact]
-        public void Create_ShouldCreateAndInsertNewProduct()
+        public async Task Create_ShouldCreateAndInsertNewProduct()
         {
             // Arrange
             _productTestTableManager.Cleanup();
@@ -79,7 +75,7 @@ namespace Stock.API.Tests.Integration
             };
 
             // Act
-            var result = _sut.Create(productDTO);
+            var result = await _sut.Create(productDTO);
 
             // Assert
             var ok = Assert.IsType<OkObjectResult>(result);
@@ -90,10 +86,10 @@ namespace Stock.API.Tests.Integration
             Assert.Equal(10.5M, actual.Price);
             Assert.Equal(10, actual.AmountInStock);
 
-            var products = _productRepository.GetAll();
+            var products = await _productRepository.GetAllAsync();
             Assert.Single(products);
 
-            Product? addedProduct = _productRepository.GetById(products.First().ID);
+            Product? addedProduct = await _productRepository.GetByIdAsync(products.First().ID);
             Assert.Equal(addedProduct.Name, actual.Name);
             Assert.Equal(addedProduct.Price, actual.Price);
             Assert.Equal(addedProduct.AmountInStock, actual.AmountInStock);
@@ -101,13 +97,13 @@ namespace Stock.API.Tests.Integration
 
         [Theory]
         [MemberData(nameof(GetInvalidProductDTOs))]
-        public void Create_ShouldReturnBadRequest_WhenInvalidProductDTO(ProductDTO productDTO, IList<ValidationFailure> expectedError)
+        public async Task Create_ShouldReturnBadRequest_WhenInvalidProductDTO(ProductDTO productDTO, IList<ValidationFailure> expectedError)
         {
             // Arrange
             _productTestTableManager.Cleanup();
 
             // Act
-            var result = _sut.Create(productDTO);
+            var result = await _sut.Create(productDTO);
 
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
@@ -120,11 +116,11 @@ namespace Stock.API.Tests.Integration
         }
 
         [Fact]
-        public void Update_ShouldUpdateProduct()
+        public async Task Update_ShouldUpdateProduct()
         {
             // Arrange
             _productTestTableManager.Cleanup();
-            _productTestTableManager.InsertProduct();
+            await _productTestTableManager.InsertProductAsync();
 
             var productDTO = new ProductDTO()
             {
@@ -134,10 +130,10 @@ namespace Stock.API.Tests.Integration
                 AmountInStock = 15
             };
 
-            var product = _productRepository.GetAll().First();
+            var product = (await _productRepository.GetAllAsync()).First();
 
             // Act
-            var result = _sut.Update(product.Code, productDTO);
+            var result = await _sut.Update(product.Code, productDTO);
 
             // Assert
             var ok = Assert.IsType<OkObjectResult>(result);
@@ -148,7 +144,7 @@ namespace Stock.API.Tests.Integration
             Assert.Equal(20.5M, actual.Price);
             Assert.Equal(15, actual.AmountInStock);
 
-            var updatedProduct = _productRepository.GetById(product.ID);
+            var updatedProduct = await _productRepository.GetByIdAsync(product.ID);
             Assert.Equal("UpdatedProductName", updatedProduct.Name);
             Assert.Equal("UpdatedProductDescription", updatedProduct.Description);
             Assert.Equal(20.5M, updatedProduct.Price);
@@ -157,13 +153,13 @@ namespace Stock.API.Tests.Integration
 
         [Theory]
         [MemberData(nameof(GetInvalidProductDTOs))]
-        public void Update_ShouldReturnBadRequestWhenInvalidProductDTO(ProductDTO productDTO, IList<ValidationFailure> expectedError)
+        public async Task Update_ShouldReturnBadRequestWhenInvalidProductDTO(ProductDTO productDTO, IList<ValidationFailure> expectedError)
         {
             // Arrange
             _productTestTableManager.Cleanup();
 
             // Act
-            var result = _sut.Update(1, productDTO);
+            var result = await _sut.Update(1, productDTO);
 
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
@@ -178,7 +174,7 @@ namespace Stock.API.Tests.Integration
         [Theory]
         [InlineData(0)]
         [InlineData(-1)]
-        public void Update_ShouldReturnBadRequest_WhenInvalidProductCode(int invalidCode)
+        public async Task Update_ShouldReturnBadRequest_WhenInvalidProductCode(int invalidCode)
         {
             // Arrange
             _productTestTableManager.Cleanup();
@@ -192,7 +188,7 @@ namespace Stock.API.Tests.Integration
             };
 
             // Act
-            var result = _sut.Update(invalidCode, productDTO);
+            var result = await _sut.Update(invalidCode, productDTO);
 
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
@@ -200,18 +196,18 @@ namespace Stock.API.Tests.Integration
         }
 
         [Fact]
-        public void Delete_ShouldDeleteProduct()
+        public async Task Delete_ShouldDeleteProduct()
         {
             // Arrange
             _productTestTableManager.Cleanup();
-            _productTestTableManager.InsertProduct();
-            var product = _productRepository.GetAll().First();
+            await _productTestTableManager.InsertProductAsync();
+            var product = (await _productRepository.GetAllAsync()).First();
 
             // Act
-            var result = _sut.Delete(product.Code);
+            var result = await _sut.Delete(product.Code);
 
             // Assert
-            Assert.Null(_productRepository.GetById(product.ID));
+            Assert.Null(await _productRepository.GetByIdAsync(product.ID));
             var ok = Assert.IsType<OkObjectResult>(result);
             var anon = ok.Value!;
 
@@ -228,13 +224,13 @@ namespace Stock.API.Tests.Integration
         [Theory]
         [InlineData(0)]
         [InlineData(-1)]
-        public void Delete_ShouldReturnBadRequest_WhenInvalidId(int productCode)
+        public async Task Delete_ShouldReturnBadRequest_WhenInvalidId(int productCode)
         {
             // Arrange
             _productTestTableManager.Cleanup();
 
             // Act
-            var result = _sut.Delete(productCode);
+            var result = await _sut.Delete(productCode);
 
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
@@ -242,7 +238,7 @@ namespace Stock.API.Tests.Integration
         }
 
         [Fact]
-        public void GetAll_ShouldReturnAllProducts()
+        public async Task GetAll_ShouldReturnAllProducts()
         {
             // Arrange
             var expectedProducts = new List<Product>
@@ -255,10 +251,10 @@ namespace Stock.API.Tests.Integration
             };
 
             _productTestTableManager.Cleanup();
-            _productTestTableManager.InsertProduct(3);
+            await _productTestTableManager.InsertProductAsync(3);
 
             // Act
-            var result = _sut.GetAll();
+            var result = await _sut.GetAll();
 
             // Assert
             var ok = Assert.IsType<OkObjectResult>(result);
@@ -271,13 +267,13 @@ namespace Stock.API.Tests.Integration
         }
 
         [Fact]
-        public void GetAll_ShouldReturnBadRequest_WhenNoProducts()
+        public async Task GetAll_ShouldReturnBadRequest_WhenNoProducts()
         {
             // Arrange
             _productTestTableManager.Cleanup();
 
             // Act
-            var result = _sut.GetAll();
+            var result = await _sut.GetAll();
 
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);

@@ -4,18 +4,20 @@ namespace Stock.API.Core.Contracts.Repository
 {
     public interface IProductRepository
     {
-        Product Create(Product product);
+        Task<Product> CreateAsync(Product product);
 
-        Product UpdateStock(int productCode, int newAmountInStock);
+        Task<Product> UpdateStockAsync(int productCode, int newAmountInStock);
 
-        Product UpdateProduct(int productCode, Product product);
+        Task<Product> UpdateProductAsync(int productCode, Product product);
 
-        Product Delete(int productCode);
+        Task<Product> DeleteAsync(int productCode);
 
-        Product GetById(Guid productId);
+        Task<Product> GetByIdAsync(Guid productId);
 
-        Product GetByCode(int productCode);
+        Task<Product> GetByCodeAsync(int productCode);
 
-        IEnumerable<Product> GetAll();
+        Task<IEnumerable<Product>> GetAllAsync();
+
+        Task<bool> IsExistingByCodeAsync(int productCode);
     }
 }

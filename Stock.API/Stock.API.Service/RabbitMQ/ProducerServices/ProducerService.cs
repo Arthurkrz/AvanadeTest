@@ -30,7 +30,7 @@ namespace Stock.API.Service.RabbitMQ.ProducerServices
             };
         }
 
-        public async Task PublishSaleProcessed(int saleCode, int productCode, IList<string> errors = null!)
+        public async Task PublishSaleProcessedAsync(int saleCode, int productCode, IList<string> errors = null!)
         {
             _connection = await _factory.CreateConnectionAsync();
             _channel = await _connection.CreateChannelAsync();
