@@ -74,7 +74,7 @@ namespace Stock.API.Service
 
         public async Task<Product> DeleteProductAsync(int productCode)
         {
-            if (await _productRepository.GetByCodeAsync(productCode) is null)
+            if (!await _productRepository.IsExistingByCodeAsync(productCode))
                 throw new StockApiException(ErrorMessages.PRODUCTNOTFOUND, ErrorType.NotFound);
 
             var deletedProduct = await _productRepository.DeleteAsync(productCode);

@@ -178,8 +178,8 @@ namespace Stock.API.Tests.Services
             var product = new Product("Name", "Description", 10, 10);
 
             _productRepositoryMock.Setup(
-                r => r.GetByCodeAsync(It.IsAny<int>()))
-                .ReturnsAsync(product);
+                r => r.IsExistingByCodeAsync(It.IsAny<int>()))
+                .ReturnsAsync(true);
 
             // Act
             await _sut.DeleteProductAsync(1);
