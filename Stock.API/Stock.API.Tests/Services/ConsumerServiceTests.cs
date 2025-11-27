@@ -1,5 +1,4 @@
-﻿using Castle.Core.Logging;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -7,14 +6,13 @@ using Moq;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Stock.API.Core.Contracts.Handler;
-using Stock.API.Service.MessageConsumerServices.BackgroundServices;
-using Stock.API.Service.MessageConsumerServices.Configurations;
-using Stock.API.Service.MessageConsumerServices.Constants;
-using Stock.API.Service.MessageConsumerServices.Models;
+using Stock.API.Service.RabbitMQ.ConsumerServices.BackgroundServices;
+using Stock.API.Service.RabbitMQ.Shared.Configurations;
+using Stock.API.Service.RabbitMQ.Shared.Constants;
+using Stock.API.Service.RabbitMQ.Shared.Models;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace Stock.API.Tests.Services
 {
@@ -91,7 +89,7 @@ namespace Stock.API.Tests.Services
         public async Task OnMessageReceivedAsync_ShouldInvokeHandlerAndAck()
         {
             // Arrange
-            var dto = new ProductSaleDTO { ProductID = Guid.Parse("3b24869d-648e-4b5f-9c2c-82e8b07dc612"), SoldAmount = 10 };
+            var dto = new ProductSaleDTO { ProductCode = 1, SoldAmount = 10 };
             var json = JsonSerializer.Serialize(dto);
             var ea = CreateEvent("product.sold", json);
 
@@ -105,7 +103,7 @@ namespace Stock.API.Tests.Services
                 x => x.Log(
                     LogLevel.Information,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Processed sale for product 3b24869d-648e-4b5f-9c2c-82e8b07dc612")),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Processed sale for product 1")),
                     It.IsAny<Exception>(),
                     It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
@@ -139,7 +137,7 @@ namespace Stock.API.Tests.Services
         public async Task OnMessageReceivedAsync_ShouldLogWarningAndNack_WhenNoHandlerFound()
         {
             // Arrange
-            var dto = new ProductSaleDTO { ProductID = Guid.NewGuid(), SoldAmount = 10 };
+            var dto = new ProductSaleDTO { ProductCode = 1, SoldAmount = 10 };
             var json = JsonSerializer.Serialize(dto);
             var ea = CreateEvent("unknown.routing.key", json);
 
@@ -162,7 +160,7 @@ namespace Stock.API.Tests.Services
         public async Task OnMessageReceivedAsync_ShouldLogErrorAckAndPublishToRetryQueue_WhenHandlerThrowsException()
         {
             // Arrange
-            var dto = new ProductSaleDTO { ProductID = Guid.NewGuid(), SoldAmount = 10 };
+            var dto = new ProductSaleDTO { ProductCode = 1, SoldAmount = 10 };
             var json = JsonSerializer.Serialize(dto);
             var ea = CreateEvent("product.sold", json);
 
@@ -204,17 +202,22 @@ namespace Stock.API.Tests.Services
         {
             yield return new object[]
             {
-                new ProductSaleDTO { ProductID = Guid.NewGuid(), SoldAmount = -5 }
+                new ProductSaleDTO { ProductCode = 1, SoldAmount = -5 }
             };
 
             yield return new object[]
             {
-                new ProductSaleDTO { ProductID = Guid.Empty, SoldAmount = 5 }
+                new ProductSaleDTO { ProductCode = 0, SoldAmount = 5 }
             };
 
             yield return new object[]
             {
-                new ProductSaleDTO { ProductID = Guid.Empty, SoldAmount = -5 }
+                new ProductSaleDTO { ProductCode = 1, SoldAmount = -5 }
+            };
+
+            yield return new object[]
+            {
+                new ProductSaleDTO { ProductCode = -1, SoldAmount = -5 }
             };
         }
     }

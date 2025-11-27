@@ -14,6 +14,9 @@ namespace Stock.API.Architecture.Configurations
                    .HasColumnType("uniqueidentifier")
                    .IsRequired();
 
+            builder.Property(x => x.Code)
+                   .IsRequired();
+
             builder.Property(x => x.Name)
                    .HasMaxLength(50)
                    .IsRequired();
@@ -34,6 +37,9 @@ namespace Stock.API.Architecture.Configurations
 
             builder.Property(x => x.LastModifiedDate)
                    .HasColumnType("datetime2");
+
+            builder.HasIndex(x => x.Code)
+                   .IsUnique();
 
             builder.ToTable("Products");
         }

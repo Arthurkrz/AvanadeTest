@@ -1,4 +1,5 @@
-﻿using Stock.API.Core.Contracts.Repository;
+﻿using Microsoft.EntityFrameworkCore;
+using Stock.API.Core.Contracts.Repository;
 using Stock.API.Core.Entities;
 
 namespace Stock.API.Architecture.Repositories
@@ -12,34 +13,33 @@ namespace Stock.API.Architecture.Repositories
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public Product Create(Product product)
+        public async Task<Product> CreateAsync(Product product)
         {
-            _context.Products.Add(product);
-            _context.SaveChanges();
+            await _context.Products.AddAsync(product);
+            await _context.SaveChangesAsync();
+
             return product;
         }
 
-        public Product Delete(Guid id)
+        public async Task<Product> UpdateStockAsync(int productCode, int newAmountInStock)
         {
-            var product = GetById(id);
+            var existingEntity = await 
+                _context.Products.FirstOrDefaultAsync(p => p.Code == productCode);
 
-            _context.Remove(product!);
-            _context.SaveChanges();
+            _context.Entry(existingEntity!).CurrentValues
+                            .SetValues(new { AmountInStock = newAmountInStock });
 
-            return product!;
+            await _context.SaveChangesAsync();
+            existingEntity!.AmountInStock = newAmountInStock;
+            return existingEntity;
         }
 
-        public IEnumerable<Product> GetAll() =>
-            _context.Set<Product>().AsQueryable();
-
-        public Product GetById(Guid productId) => 
-            _context.Products.Find(productId)!;
-
-        public Product UpdateProduct(Guid productId, Product product)
+        public async Task<Product> UpdateProductAsync(int productCode, Product product)
         {
-            var existingEntity = _context.Set<Product>().Find(productId)!;
+            var existingEntity = await 
+                _context.Products.FirstOrDefaultAsync(p => p.Code == productCode)!;
 
-            existingEntity.Name = product.Name;
+            existingEntity!.Name = product.Name;
             existingEntity.Description = product.Description;
             existingEntity.Price = product.Price;
             existingEntity.AmountInStock = product.AmountInStock;
@@ -48,16 +48,26 @@ namespace Stock.API.Architecture.Repositories
             return product;
         }
 
-        public Product UpdateStock(Guid productId, int newAmountInStock)
+        public async Task<Product> DeleteAsync(int productCode)
         {
-            var existingEntity = _context.Products.Find(productId);
+            var product = await GetByCodeAsync(productCode);
 
-            _context.Entry(existingEntity!).CurrentValues
-                            .SetValues(new { AmountInStock = newAmountInStock });
-
+            _context.Remove(product!);
             _context.SaveChanges();
-            existingEntity!.AmountInStock = newAmountInStock;
-            return existingEntity;
+
+            return product!;
         }
+
+        public async Task<Product> GetByIdAsync(Guid productId) =>
+            (await _context.Products.FindAsync(productId))!;
+
+        public async Task<Product> GetByCodeAsync(int productCode) =>
+            (await _context.Products.FirstOrDefaultAsync(p => p.Code == productCode))!;
+
+        public async Task<IEnumerable<Product>> GetAllAsync() =>
+            await _context.Set<Product>().ToListAsync();
+
+        public async Task<bool> IsExistingByCodeAsync(int productCode) =>
+            await _context.Products.AnyAsync(p => p.Code == productCode);
     }
 }

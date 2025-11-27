@@ -4,14 +4,18 @@ namespace Stock.API.Core.Contracts.Service
 {
     public interface IProductService
     {
-        Product Create(Product product);
+        Task<Product> CreateAsync(Product product);
 
-        Product UpdateStock(Guid productId, int sellAmount);
+        Task UpdateStockAsync(int saleCode, int productCode, int sellAmount);
 
-        Product UpdateProduct(Guid productId, Product product);
+        Task<Product> UpdateProductAsync(int productCode, Product product);
 
-        Product DeleteProduct(Guid id);
+        Task<Product> DeleteProductAsync(int productCode);
 
-        IEnumerable<Product> GetAll();
+        Task<Product> GetByCodeAsync(int productCode);
+
+        Task<bool> IsExistingByCodeAsync(int productCode);
+
+        Task<IEnumerable<Product>> GetAllAsync();
     }
 }

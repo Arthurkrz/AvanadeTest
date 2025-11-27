@@ -4,14 +4,14 @@
     {
         Undefined = 0,
         
-        NotFound = 2,
+        NotFound = 1,
         
-        InternalError = 3,
+        InternalError = 2,
         
-        DatabaseError = 4,
+        DatabaseError = 3,
         
-        IntegrationError = 5,
+        IntegrationError = 4,
 
-        BusinessRuleViolation = 6
+        BusinessRuleViolation = 5
     }
 }

@@ -19,14 +19,16 @@ namespace Stock.API.Tests.Integration.Utilities
         public void Cleanup() =>
             _context.Database.ExecuteSqlRaw("TRUNCATE TABLE Products");
 
-        public void InsertProduct(int numberOfProductsToInsert = 1)
+        public async Task InsertProductAsync(int numberOfProductsToInsert = 1)
         {
             for (int productNumber = 0; productNumber < numberOfProductsToInsert; productNumber++)
             {
-                var product = new Product($"Name{productNumber}", 
-                                          $"Description{productNumber}", 10, 10);
+                var product = new Product
+                ($"Name{productNumber}", $"Description{productNumber}", 10, 10);
 
-                _productRepository.Create(product);
+                product.Code = productNumber + 1;
+
+                await _productRepository.CreateAsync(product);
             }
         }
     }

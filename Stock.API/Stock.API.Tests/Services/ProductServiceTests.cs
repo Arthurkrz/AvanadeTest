@@ -1,8 +1,8 @@
 using FluentValidation;
 using FluentValidation.Results;
-using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Stock.API.Core.Common;
+using Stock.API.Core.Contracts.RabbitMQ;
 using Stock.API.Core.Contracts.Repository;
 using Stock.API.Core.Contracts.Service;
 using Stock.API.Core.Entities;
@@ -15,6 +15,7 @@ namespace Stock.API.Tests.Services
     public class ProductServiceTests
     {
         private readonly Mock<IProductRepository> _productRepositoryMock;
+        private readonly Mock<IProducerService> _producerServiceMock;
         private readonly Mock<IValidator<Product>> _productValidatorMock;
         private readonly IValidator<Product> _productValidator;
         private IProductService _sut;
@@ -22,39 +23,42 @@ namespace Stock.API.Tests.Services
         public ProductServiceTests()
         {
             _productRepositoryMock = new Mock<IProductRepository>();
+            _producerServiceMock = new Mock<IProducerService>();
             _productValidatorMock = new Mock<IValidator<Product>>();
             _productValidator = new ProductValidator();
 
-            _sut = new ProductService(_productRepositoryMock.Object, _productValidatorMock.Object);
+            _sut = new ProductService(_productRepositoryMock.Object, 
+                                      _productValidatorMock.Object, 
+                                      _producerServiceMock.Object);
         }
 
         [Fact]
-        public void Create_ShouldInvokeRepositoryAddMethod()
+        public async Task CreateAsync_ShouldInvokeRepositoryAddMethod()
         {
             // Arrange
             _productValidatorMock.Setup(v => v.Validate(It.IsAny<Product>()))
                 .Returns(new ValidationResult());
 
             // Act
-            _sut.Create(new Product("Name", "Description", 10, 10));
+            await _sut.CreateAsync(new Product("Name", "Description", 10, 10));
 
             // Assert
-            _productRepositoryMock.Verify(r => r.Create(
+            _productRepositoryMock.Verify(r => r.CreateAsync(
                 It.IsAny<Product>()), Times.Once);
         }
 
         [Theory]
         [MemberData(nameof(GetInvalidProducts))]
-        public void Create_ShouldThrowExceptionWithErrors_WhenValidationFails(Product product, IList<string> expectedErrors)
+        public async Task CreateAsync_ShouldThrowExceptionWithErrors_WhenValidationFails(Product product, IList<string> expectedErrors)
         {
             // Arrange
-            _sut = new ProductService(_productRepositoryMock.Object, _productValidator);
+            _sut = new ProductService(_productRepositoryMock.Object, _productValidator, _producerServiceMock.Object);
 
             var expectedError = string.Join(", ", expectedErrors);
 
             // Act & Assert
-            var ex = Assert.Throws<StockApiException>(() =>
-                _sut.Create(product));
+            var ex = await Assert.ThrowsAsync<StockApiException>(() =>
+                _sut.CreateAsync(product));
 
             var expectedMessage = ErrorMessages.INVALIDREQUEST
                 .Replace("{error}", expectedError);
@@ -64,38 +68,52 @@ namespace Stock.API.Tests.Services
         }
 
         [Fact]
-        public void UpdateStock_ShouldInvokeRepositoryUpdateStockMethod()
+        public async Task UpdateStockAsync_ShouldInvokeRepositoryUpdateStockAndMessagePublisherMethod()
         {
             // Arrange
             var product = new Product("Name", "Description", 10, 10);
 
             _productRepositoryMock.Setup(
-                r => r.GetById(It.IsAny<Guid>()))
-                .Returns(product);
+                r => r.GetByCodeAsync(It.IsAny<int>()))
+                .ReturnsAsync(product);
 
             // Act
-            _sut.UpdateStock(new Guid(), 1);
+            await _sut.UpdateStockAsync(1, 1, 1);
 
             // Assert
-            _productRepositoryMock.Verify(r => r.UpdateStock(
-                It.IsAny<Guid>(), It.IsAny<int>()), Times.Once);
+            _productRepositoryMock.Verify(r => r.UpdateStockAsync(
+                It.IsAny<int>(), It.IsAny<int>()), Times.Once);
+
+            _producerServiceMock.Verify(p => p.PublishSaleProcessedAsync(
+                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<IList<string>>()), Times.Once);
         }
 
         [Fact]
-        public void UpdateStock_ShouldThrowException_WhenProductNotFound()
+        public async Task UpdateStockAsync_ShouldInvokePublishMethodWithErrors_WhenProductNotFound()
         {
             // Arrange
             _productRepositoryMock.Setup(
-                r => r.GetById(It.IsAny<Guid>()))
-                .Returns((Product)null!);
+                r => r.GetByCodeAsync(It.IsAny<int>()))
+                .ReturnsAsync((Product)null!);
 
-            // Act & Assert
-            var ex = Assert.Throws<StockApiException>(() =>
-                _sut.UpdateStock(new Guid(), 1));
+            var errorMessageList = new List<string> 
+            { ErrorMessages.PRODUCTNOTFOUND };
+
+            // Act
+            await _sut.UpdateStockAsync(1, 1, 1);
+
+            // Assert
+            _productRepositoryMock.Verify(
+                r => r.GetByCodeAsync(It.IsAny<int>()), 
+                Times.Once);
+
+            _producerServiceMock.Verify(
+                p => p.PublishSaleProcessedAsync(It.IsAny<int>(), 
+                It.IsAny<int>(), errorMessageList), Times.Once);
         }
 
         [Fact]
-        public void UpdateProduct_ShouldInvokeRepositoryUpdateProductMethod()
+        public async Task UpdateProductAsync_ShouldInvokeRepositoryUpdateProductMethod()
         {
             // Arrange
             var product = new Product("Name", "Description", 10, 10);
@@ -105,33 +123,33 @@ namespace Stock.API.Tests.Services
                 .Returns(new ValidationResult());
 
             _productRepositoryMock.Setup(
-                r => r.GetById(It.IsAny<Guid>()))
-                .Returns(product);
+                r => r.IsExistingByCodeAsync(It.IsAny<int>()))
+                .ReturnsAsync(true);
 
             // Act
-            _sut.UpdateProduct(new Guid(), new Product("Name", "Description", 10, 10));
+            await _sut.UpdateProductAsync(1, product);
 
             // Assert
-            _productRepositoryMock.Verify(r => r.UpdateProduct(
-                It.IsAny<Guid>(), It.IsAny<Product>()), Times.Once);
+            _productRepositoryMock.Verify(r => r.UpdateProductAsync(
+                1, It.IsAny<Product>()), Times.Once);
         }
 
         [Theory]
         [MemberData(nameof(GetInvalidProducts))]
-        public void UpdateProduct_ShouldThrowExceptionWithErrors_WhenValidationFails(Product product, IList<string> expectedErrors)
+        public async Task UpdateProductAsync_ShouldThrowExceptionWithErrors_WhenValidationFails(Product product, IList<string> expectedErrors)
         {
             // Arrange
-            _sut = new ProductService(_productRepositoryMock.Object, _productValidator);
+            _sut = new ProductService(_productRepositoryMock.Object, _productValidator, _producerServiceMock.Object);
 
             _productRepositoryMock.Setup(
-                r => r.GetById(It.IsAny<Guid>()))
-                .Returns(product);
+                r => r.IsExistingByCodeAsync(It.IsAny<int>()))
+                .ReturnsAsync(true);
 
             var expectedError = string.Join(", ", expectedErrors);
 
             // Act & Assert
-            var ex = Assert.Throws<StockApiException>(() =>
-                _sut.UpdateProduct(Guid.NewGuid(), product));
+            var ex = await Assert.ThrowsAsync<StockApiException>(() =>
+                _sut.UpdateProductAsync(1, product));
 
             var expectedMessage = ErrorMessages.INVALIDREQUEST
                 .Replace("{error}", expectedError);
@@ -141,55 +159,55 @@ namespace Stock.API.Tests.Services
         }
 
         [Fact]
-        public void UpdateProduct_ShouldThrowException_WhenProductNotFound()
+        public async Task UpdateProductAsync_ShouldThrowException_WhenProductNotFound()
         {
             // Arrange
             _productRepositoryMock.Setup(
-                r => r.GetById(It.IsAny<Guid>()))
-                .Returns((Product)null!);
+                r => r.GetByCodeAsync(It.IsAny<int>()))
+                .ReturnsAsync((Product)null!);
 
             // Act & Assert
-            var ex = Assert.Throws<StockApiException>(() =>
-                _sut.UpdateProduct(new Guid(), new Product("Name", "Description", 10, 10)));
+            var ex = await Assert.ThrowsAsync<StockApiException>(() =>
+                _sut.UpdateProductAsync(1, new Product("Name", "Description", 10, 10)));
         }
 
         [Fact]
-        public void DeleteProduct_ShouldInvokeRepositoryDeleteMethod()
+        public async Task DeleteProductAsync_ShouldInvokeRepositoryDeleteMethod()
         {
             // Arrange
             var product = new Product("Name", "Description", 10, 10);
 
             _productRepositoryMock.Setup(
-                r => r.GetById(It.IsAny<Guid>()))
-                .Returns(product);
+                r => r.IsExistingByCodeAsync(It.IsAny<int>()))
+                .ReturnsAsync(true);
 
             // Act
-            _sut.DeleteProduct(new Guid());
+            await _sut.DeleteProductAsync(1);
 
             // Assert
-            _productRepositoryMock.Verify(r => r.Delete(
-                It.IsAny<Guid>()), Times.Once);
+            _productRepositoryMock.Verify(r => r.DeleteAsync(
+                It.IsAny<int>()), Times.Once);
         }
 
         [Fact]
-        public void DeleteProduct_ShouldThrowException_WhenProductNotFound()
+        public async Task DeleteProductAsync_ShouldThrowException_WhenProductNotFound()
         {
             // Arrange
             _productRepositoryMock.Setup(
-                r => r.GetById(It.IsAny<Guid>()))
-                .Returns((Product)null!);
+                r => r.GetByCodeAsync(It.IsAny<int>()))
+                .ReturnsAsync((Product)null!);
 
             // Act & Assert
-            var ex = Assert.Throws<StockApiException>(() =>
-                _sut.DeleteProduct(new Guid()));
+            var ex = await Assert.ThrowsAsync<StockApiException>(() =>
+                _sut.DeleteProductAsync(1));
         }
 
         [Fact]
-        public void GetAll_ShouldInvokeRepositoryGetAllMethod()
+        public async Task GetAllAsync_ShouldInvokeRepositoryGetAllMethod()
         {
             // Act & Assert
-            _sut.GetAll();
-            _productRepositoryMock.Verify(r => r.GetAll(), Times.Once);
+            await _sut.GetAllAsync();
+            _productRepositoryMock.Verify(r => r.GetAllAsync(), Times.Once);
         }
 
         public static IEnumerable<object[]> GetInvalidProducts()

@@ -22,60 +22,6 @@ namespace Stock.API.Architecture.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Stock.API.Core.Entities.Admin", b =>
-                {
-                    b.Property<Guid>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("CPF")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreationDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("FailedLoginCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("HashAlgorithm")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("HashParams")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("LastLoginDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("LastModifiedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("LockoutEnd")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<byte[]>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<byte[]>("PasswordSalt")
-                        .IsRequired()
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("ID");
-
-                    b.ToTable("Admins");
-                });
-
             modelBuilder.Entity("Stock.API.Core.Entities.Product", b =>
                 {
                     b.Property<Guid>("ID")
@@ -83,6 +29,9 @@ namespace Stock.API.Architecture.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("AmountInStock")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Code")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreationDate")
@@ -105,6 +54,9 @@ namespace Stock.API.Architecture.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("ID");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
 
                     b.ToTable("Products", (string)null);
                 });
