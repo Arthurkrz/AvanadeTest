@@ -23,7 +23,7 @@ public class ProductController : ControllerBase
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpPost]
+    [HttpPost("create")]
     public async Task<IActionResult> Create([FromBody] ProductDTO productDTO)
     {
         var validationResult = _productDTOValidator.Validate(productDTO);
@@ -40,7 +40,7 @@ public class ProductController : ControllerBase
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpPut("update/{id:guid}")]
+    [HttpPut("update/{productCode:int}")]
     public async Task<IActionResult> Update(int productCode, [FromBody] ProductDTO productDTO)
     {
         if (productCode <= 0) return BadRequest(ErrorMessages.INCORRECTFORMAT);
@@ -62,7 +62,7 @@ public class ProductController : ControllerBase
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpDelete("{id:guid}")]
+    [HttpDelete("delete/{productCode:int}")]
     public async Task<IActionResult> Delete(int productCode)
     {
         if (productCode <= 0) return BadRequest(ErrorMessages.INCORRECTFORMAT);
@@ -72,8 +72,8 @@ public class ProductController : ControllerBase
         return Ok(new { deletedProduct.ID, deletedProduct.Name });
     }
 
-    [Authorize(Roles = "Admin,SalesAPI")]
-    [HttpGet]
+    [Authorize(Roles = "Admin,Buyer")]
+    [HttpGet("all")]
     public async Task<IActionResult> GetAll()
     {
         var products = await _productService.GetAllAsync();
@@ -83,7 +83,8 @@ public class ProductController : ControllerBase
         return Ok(products);
     }
 
-    [Authorize(Roles = "Admin,SalesAPI")]
+    [Authorize(Roles = "Admin,Buyer")]
+    [HttpGet("product/{productCode:int}")]
     public async Task<IActionResult> GetByCode(int productCode)
     {
         if (productCode <= 0) return BadRequest(ErrorMessages.INCORRECTFORMAT);
@@ -95,7 +96,7 @@ public class ProductController : ControllerBase
         return Ok(product);
     }
 
-    [Authorize(Roles = "Admin,SalesAPI")]
+    [Authorize(Roles = "SalesAPI")]
     [HttpGet("exists/{productCode}")]
     public async Task<bool> Exists(int productCode) => 
         await _productService.IsExistingByCodeAsync(productCode);

@@ -68,7 +68,7 @@ namespace Sales.API.Web.Controllers
             return Ok(sales);
         }
 
-        [HttpGet("{saleCode:int}")]
+        [HttpGet("sale/{saleCode:int}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetByCode(int saleCode)
         {

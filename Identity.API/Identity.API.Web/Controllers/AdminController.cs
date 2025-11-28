@@ -22,7 +22,7 @@ public class AdminController : Controller
     }
 
     [AllowAnonymous]
-    [HttpPost("register")]
+    [HttpPost("admin/register")]
     public async Task<IActionResult> Register(AdminDTO adminDTO)
     {
         var validationResult = _adminDTOValidator.Validate(adminDTO);
@@ -39,7 +39,7 @@ public class AdminController : Controller
     }
 
     [AllowAnonymous]
-    [HttpPost("login")]
+    [HttpPost("admin/login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
     {
         var username = loginRequest.Username;
