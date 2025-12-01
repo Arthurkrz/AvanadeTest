@@ -4,7 +4,6 @@ using Gateway.API.Web.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Polly;
-using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
 
@@ -65,22 +64,7 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseMiddleware<LoggingMiddleware>();
 app.UseHttpsRedirection();
-
-
 app.UseAuthentication();
-
-app.Use(async (context, next) =>
-{
-    Console.WriteLine("AUTH INFO:");
-    Console.WriteLine("Authenticated: " + context.User.Identity?.IsAuthenticated);
-    Console.WriteLine("Name: " + context.User.Identity?.Name);
-
-    foreach (var c in context.User.Claims)
-        Console.WriteLine($"{c.Type} = {c.Value}");
-
-    await next();
-});
-
 app.UseAuthorization();
 app.UseRateLimiter();
 
