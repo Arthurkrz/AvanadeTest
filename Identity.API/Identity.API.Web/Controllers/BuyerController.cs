@@ -22,7 +22,7 @@ namespace Identity.API.Web.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("register")]
+        [HttpPost("buyer/register")]
         public async Task<IActionResult> Register(BuyerDTO buyerDTO)
         {
             var validationResult = _buyerDTOValidator.Validate(buyerDTO);
@@ -41,7 +41,7 @@ namespace Identity.API.Web.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("login")]
+        [HttpPost("buyer/login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
         {
             var username = loginRequest.Username;

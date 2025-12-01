@@ -3,6 +3,7 @@ using FluentValidation.AspNetCore;
 using Identity.API.Core.Validators;
 using Identity.API.IOC;
 using Identity.API.Web.DTOs;
+using Identity.API.Web.Utilities;
 using Identity.API.Web.Validators;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -43,6 +44,8 @@ builder.Services.InjectServices();
 builder.Services.InjectValidators();
 builder.Services.AddValidatorsFromAssemblyContaining<AdminDTOValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<AdminRegisterRequestValidator>();
+
+builder.Services.AddScoped<JwtTokenService>();
 
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();

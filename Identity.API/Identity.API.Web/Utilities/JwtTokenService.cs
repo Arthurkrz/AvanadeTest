@@ -14,19 +14,18 @@ namespace Identity.API.Web.Utilities
             _config = config;
         }
 
-        public string GenerateToken(string subject, string role, string audienceKey)
+        public string GenerateToken(string subject, string role)
         {
             var jwtSettings = _config.GetSection("Jwt");
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!));
 
-            var audience = jwtSettings[$"Audiences:{audienceKey}"];
-            if (audience is null)
-                throw new InvalidOperationException($"Audience '{audienceKey}' not found in configuration.");
+            var audience = jwtSettings["Audience"];
+            var issuer = jwtSettings["Issuer"];
 
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, subject),
-                new Claim(ClaimTypes.Role, role),
+                new Claim("role", role),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
@@ -34,10 +33,10 @@ namespace Identity.API.Web.Utilities
 
             var token = new JwtSecurityToken
             (
-                issuer: jwtSettings["Issuer"],
+                issuer: issuer,
                 audience: audience,
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(Convert.ToDouble(jwtSettings["DurationInMinutes"])),
+                expires: DateTime.Now.AddMinutes(Convert.ToDouble(jwtSettings["AccessTokenExpirationMinutes"])),
                 signingCredentials: creds
             );
 
