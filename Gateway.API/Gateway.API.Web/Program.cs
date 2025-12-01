@@ -2,10 +2,11 @@ using Gateway.API.Web.Contracts;
 using Gateway.API.Web.Middlewares;
 using Gateway.API.Web.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Polly;
+using System.Security.Claims;
 using System.Text;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,12 +15,16 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddRateLimiter(options =>
 {
-    options.AddFixedWindowLimiter("global", rate =>
-    {
-        rate.PermitLimit = 10;
-        rate.Window = TimeSpan.FromSeconds(1);
-        rate.QueueLimit = 0;
-    });
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+        RateLimitPartition.GetFixedWindowLimiter("global", partition => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 10,
+            Window = TimeSpan.FromSeconds(1),
+            QueueLimit = 0
+        })
+    );
 });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -35,7 +40,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+
+            RoleClaimType = "role"
         };
     });
 
@@ -57,11 +64,27 @@ if (app.Environment.IsDevelopment())
 
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseMiddleware<LoggingMiddleware>();
-app.UseRateLimiter();
-app.UseMiddleware<RequestValidationMiddleware>();
-
 app.UseHttpsRedirection();
+
+
 app.UseAuthentication();
+
+app.Use(async (context, next) =>
+{
+    Console.WriteLine("AUTH INFO:");
+    Console.WriteLine("Authenticated: " + context.User.Identity?.IsAuthenticated);
+    Console.WriteLine("Name: " + context.User.Identity?.Name);
+
+    foreach (var c in context.User.Claims)
+        Console.WriteLine($"{c.Type} = {c.Value}");
+
+    await next();
+});
+
 app.UseAuthorization();
+app.UseRateLimiter();
+
 app.MapControllers();
 app.Run();
+
+public partial class Program { }

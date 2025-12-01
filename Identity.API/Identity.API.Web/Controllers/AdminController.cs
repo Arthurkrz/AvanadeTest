@@ -2,6 +2,7 @@ using FluentValidation;
 using Identity.API.Core.Common;
 using Identity.API.Core.Contracts.Service;
 using Identity.API.Web.DTOs;
+using Identity.API.Web.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,16 +10,18 @@ namespace Identity.API.Web.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/[controller]")]
+[Route("identity")]
 public class AdminController : Controller
 {
     private readonly IAdminService _adminService;
     private readonly IValidator<AdminDTO> _adminDTOValidator;
+    private readonly JwtTokenService _jwtService;
 
-    public AdminController(IAdminService adminService, IValidator<AdminDTO> adminDTOValidator)
+    public AdminController(IAdminService adminService, IValidator<AdminDTO> adminDTOValidator, JwtTokenService jwtService)
     {
         _adminService = adminService;
         _adminDTOValidator = adminDTOValidator;
+        _jwtService = jwtService;
     }
 
     [AllowAnonymous]
@@ -52,6 +55,8 @@ public class AdminController : Controller
 
         if (!isAuthenticated) return BadRequest(ErrorMessages.INVALIDCREDENTIALS);
 
-        return Ok(username);
+        var token = _jwtService.GenerateToken(username, "Admin");
+
+        return Ok(new { username, token });
     }
 }

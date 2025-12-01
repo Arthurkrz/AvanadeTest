@@ -10,7 +10,7 @@ namespace Sales.API.Service.Clients
         public IdentityClient(HttpClient httpClient, IConfiguration config)
         {
             _httpClient = httpClient;
-            _httpClient.BaseAddress = new Uri(config["ServiceUrls:IdentityAPI"]!);
+            _httpClient.BaseAddress = new Uri(config["Services:IdentityAPI"]!);
         }
 
         public async Task<bool> BuyerExistsAsync(int buyerCPF)

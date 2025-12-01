@@ -34,7 +34,6 @@ builder.Services.InjectWorkers();
 
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen();
-builder.Services.AddAuthorization();
 builder.Services.AddEndpointsApiExplorer();
 
 var app = builder.Build();
@@ -48,8 +47,6 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseHttpsRedirection();
-app.UseAuthentication();
-app.UseAuthorization();
 app.MapControllers();
 app.Run();
 

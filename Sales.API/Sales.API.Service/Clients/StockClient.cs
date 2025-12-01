@@ -10,7 +10,7 @@ namespace Sales.API.Service.Clients
         public StockClient(HttpClient httpClient, IConfiguration config)
         {
             _httpClient = httpClient;
-            _httpClient.BaseAddress = new Uri(config["ServiceUrls:StockAPI"]!);
+            _httpClient.BaseAddress = new Uri(config["Services:StockAPI"]!);
         }
 
         public async Task<bool> ProductExistsAsync(int productCode)

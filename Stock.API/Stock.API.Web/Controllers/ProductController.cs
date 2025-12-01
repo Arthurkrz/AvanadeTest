@@ -1,5 +1,4 @@
 using FluentValidation;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Stock.API.Core.Common;
 using Stock.API.Core.Contracts.Service;
@@ -8,9 +7,8 @@ using Stock.API.Web.DTOs;
 
 namespace StockAPI.Controllers;
 
-[Authorize]
 [ApiController]
-[Route("api/[controller]")]
+[Route("stock")]
 public class ProductController : ControllerBase
 {
     private readonly IProductService _productService;
@@ -22,7 +20,6 @@ public class ProductController : ControllerBase
         _productDTOValidator = productDTOValidator;
     }
 
-    [Authorize(Roles = "Admin")]
     [HttpPost("create")]
     public async Task<IActionResult> Create([FromBody] ProductDTO productDTO)
     {
@@ -39,7 +36,6 @@ public class ProductController : ControllerBase
         return Ok(createdProduct);
     }
 
-    [Authorize(Roles = "Admin")]
     [HttpPut("update/{productCode:int}")]
     public async Task<IActionResult> Update(int productCode, [FromBody] ProductDTO productDTO)
     {
@@ -61,7 +57,6 @@ public class ProductController : ControllerBase
         return Ok(updatedProduct);
     }
 
-    [Authorize(Roles = "Admin")]
     [HttpDelete("delete/{productCode:int}")]
     public async Task<IActionResult> Delete(int productCode)
     {
@@ -72,7 +67,6 @@ public class ProductController : ControllerBase
         return Ok(new { deletedProduct.ID, deletedProduct.Name });
     }
 
-    [Authorize(Roles = "Admin,Buyer")]
     [HttpGet("all")]
     public async Task<IActionResult> GetAll()
     {
@@ -83,7 +77,6 @@ public class ProductController : ControllerBase
         return Ok(products);
     }
 
-    [Authorize(Roles = "Admin,Buyer")]
     [HttpGet("product/{productCode:int}")]
     public async Task<IActionResult> GetByCode(int productCode)
     {
@@ -96,7 +89,6 @@ public class ProductController : ControllerBase
         return Ok(product);
     }
 
-    [Authorize(Roles = "SalesAPI")]
     [HttpGet("exists/{productCode}")]
     public async Task<bool> Exists(int productCode) => 
         await _productService.IsExistingByCodeAsync(productCode);

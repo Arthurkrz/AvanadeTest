@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 using System.Net;
 using System.Text;
 
-namespace Gateway.API.Tests
+namespace Gateway.API.Tests.Services
 {
     public class ProxyServiceTests
     {

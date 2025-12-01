@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Gateway.API.Web.Controllers
 {
-    [Authorize]
     [ApiController]
     [Route("stock")]
     public class StockController : ControllerBase
